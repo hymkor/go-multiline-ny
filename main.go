@@ -14,6 +14,7 @@ func Read(ctx context.Context) ([]string, error) {
 		COMMIT
 		UP
 		DOWN
+		JOINBEFORE
 	)
 
 	press := NEWLINE
@@ -38,7 +39,7 @@ func Read(ctx context.Context) ([]string, error) {
 
 	editor.LineFeed = func(rc readline.Result) {
 		if rc == readline.ENTER {
-			if press == UP {
+			if press == UP || press == JOINBEFORE {
 				return
 			} else if press == NEWLINE {
 				fmt.Fprintln(editor.Out, "\x1B[0K")
@@ -54,6 +55,18 @@ func Read(ctx context.Context) ([]string, error) {
 	editor.BindKeyClosure(readline.K_DOWN, downFunc)
 	editor.BindKeyClosure(readline.K_CTRL_N, downFunc)
 
+	bs := editor.GetBindKey(readline.K_CTRL_H)
+	joinbefore := func(ctx context.Context, b *readline.Buffer) readline.Result {
+		if b.Cursor > 0 {
+			return bs.Call(ctx, b)
+		}
+		if csrline == 0 {
+			return readline.CONTINUE
+		}
+		press = JOINBEFORE
+		return readline.ENTER
+	}
+	editor.BindKeyClosure(readline.K_CTRL_H, joinbefore)
 	lines := []string{}
 
 	editor.Prompt = func() (int, error) {
@@ -104,6 +117,24 @@ func Read(ctx context.Context) ([]string, error) {
 			if up > 0 {
 				fmt.Fprintf(editor.Out, "\x1B[%dA", up)
 			}
+		} else if press == JOINBEFORE {
+			if csrline > 0 {
+				csrline--
+				editor.Cursor = len([]rune(lines[csrline]))
+				lines[csrline] = lines[csrline] + line
+				if csrline+1 < len(lines) {
+					copy(lines[csrline+1:], lines[csrline+2:])
+					lines = lines[:len(lines)-1]
+				}
+				fmt.Fprint(editor.Out, "\x1B[A\r")
+				for i := csrline; i < len(lines); i++ {
+					fmt.Fprintf(editor.Out, "%2d %s\x1B[0K\n", i+1, lines[i])
+				}
+				if len(lines) > csrline {
+					fmt.Fprintf(editor.Out, "\x1B[0K\x1B[%dA", len(lines)-csrline)
+				}
+			}
+			press = NEWLINE
 		} else {
 			if csrline >= len(lines) {
 				lines = append(lines, line)
