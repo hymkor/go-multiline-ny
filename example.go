@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nyaosorg/go-readline-ny"
-
 	"github.com/hymkor/go-multiline-ny"
 )
 
 func mains() error {
-	editor := &readline.Editor{}
 	ctx := context.Background()
 	fmt.Println("Enter, DOWN or Ctrl-N: New line or move to the next line")
 	fmt.Println("UP or Ctrl-P: Move to the previous line.")
@@ -21,11 +18,14 @@ func mains() error {
 	fmt.Println("Ctrl-C: Cancel lines.")
 	fmt.Println("Ctrl-D: Quit.")
 	for {
-		lines, err := multiline.Read(ctx, editor)
+		lines, err := multiline.Read(ctx)
 		if err != nil {
 			return err
 		}
 		fmt.Println("-----")
+		for len(lines) > 0 && lines[len(lines)-1] == "" {
+			lines = lines[:len(lines)-1]
+		}
 		for _, s := range lines {
 			fmt.Println(s)
 		}

@@ -8,7 +8,9 @@ import (
 	"github.com/nyaosorg/go-readline-ny"
 )
 
-func Read(ctx context.Context, editor *readline.Editor) ([]string, error) {
+func Read(ctx context.Context) ([]string, error) {
+	editor := &readline.Editor{}
+
 	submit := false
 	editor.BindKeyClosure(readline.K_CTRL_J, func(_ context.Context, B *readline.Buffer) readline.Result {
 		submit = true
@@ -44,7 +46,7 @@ func Read(ctx context.Context, editor *readline.Editor) ([]string, error) {
 	lines := []string{}
 
 	editor.Prompt = func() (int, error) {
-		return fmt.Printf("%d> ", csrline)
+		return fmt.Fprintf(editor.Out, "%2d ", csrline+1)
 	}
 	for {
 		if csrline < len(lines) {
@@ -56,7 +58,8 @@ func Read(ctx context.Context, editor *readline.Editor) ([]string, error) {
 		if err != nil {
 			if errors.Is(err, readline.CtrlC) {
 				lines = lines[:0]
-				fmt.Println("^C")
+				csrline = 0
+				fmt.Fprintln(editor.Out, "^C")
 				continue
 			}
 			return nil, err
@@ -68,13 +71,14 @@ func Read(ctx context.Context, editor *readline.Editor) ([]string, error) {
 		}
 		if submit {
 			for i := csrline + 1; i < len(lines); i++ {
-				fmt.Println()
+				fmt.Fprintln(editor.Out)
 			}
+			editor.Out.Flush()
 			return lines, nil
 		} else if upper {
 			upper = false
 			csrline--
-			fmt.Printf("\r\x1B[A")
+			fmt.Fprint(editor.Out, "\r\x1B[A")
 		} else {
 			csrline++
 		}
