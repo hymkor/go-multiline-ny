@@ -10,7 +10,7 @@ import (
 	"github.com/hymkor/go-multiline-ny"
 )
 
-func mains() error {
+func main() {
 	ctx := context.Background()
 	fmt.Println("Enter, DOWN or Ctrl-N: New line or move to the next line")
 	fmt.Println("UP or Ctrl-P: Move to the previous line.")
@@ -20,7 +20,8 @@ func mains() error {
 	for {
 		lines, err := multiline.Read(ctx)
 		if err != nil {
-			return err
+			fmt.Fprintln(os.Stderr, err.Error())
+			return
 		}
 		fmt.Println("-----")
 		for len(lines) > 0 && lines[len(lines)-1] == "" {
@@ -30,12 +31,5 @@ func mains() error {
 			fmt.Println(s)
 		}
 		fmt.Println("-----")
-	}
-}
-
-func main() {
-	if err := mains(); err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
 	}
 }
