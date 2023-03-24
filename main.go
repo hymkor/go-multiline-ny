@@ -9,28 +9,34 @@ import (
 )
 
 func Read(ctx context.Context) ([]string, error) {
+	const (
+		NEWLINE = iota
+		COMMIT
+		UP
+	)
+
+	press := NEWLINE
+
 	editor := &readline.Editor{}
 
-	submit := false
 	editor.BindKeyClosure(readline.K_CTRL_J, func(_ context.Context, B *readline.Buffer) readline.Result {
-		submit = true
+		press = COMMIT
 		return readline.ENTER
 	})
 
 	csrline := 0
-	upper := false
 	upperFunc := func(_ context.Context, B *readline.Buffer) readline.Result {
 		if csrline <= 0 {
 			return readline.CONTINUE
 		}
-		upper = true
+		press = UP
 		return readline.ENTER
 	}
 	editor.BindKeyClosure(readline.K_CTRL_P, upperFunc)
 	editor.BindKeyClosure(readline.K_UP, upperFunc)
 
 	editor.LineFeed = func(rc readline.Result) {
-		if rc == readline.ENTER && upper {
+		if rc == readline.ENTER && press == UP {
 			return
 		}
 		fmt.Fprintln(editor.Out)
@@ -69,14 +75,14 @@ func Read(ctx context.Context) ([]string, error) {
 		} else {
 			lines[csrline] = line
 		}
-		if submit {
+		if press == COMMIT {
 			for i := csrline + 1; i < len(lines); i++ {
 				fmt.Fprintln(editor.Out)
 			}
 			editor.Out.Flush()
 			return lines, nil
-		} else if upper {
-			upper = false
+		} else if press == UP {
+			press = NEWLINE
 			csrline--
 			fmt.Fprint(editor.Out, "\r\x1B[A")
 		} else {
