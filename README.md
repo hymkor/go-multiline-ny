@@ -22,7 +22,7 @@ func main() {
     ctx := context.Background()
     fmt.Println("Enter, DOWN or Ctrl-N: New line or move to the next line")
     fmt.Println("UP or Ctrl-P: Move to the previous line.")
-    fmt.Println("Ctrl-Enter: Sumbit")
+    fmt.Println("Ctrl-Enter: Submit")
     fmt.Println("Ctrl-C: Cancel lines.")
     fmt.Println("Ctrl-D: Quit.")
     for {
