@@ -89,8 +89,13 @@ func Read(ctx context.Context) ([]string, error) {
 
 	del := editor.GetBindKey(readline.K_CTRL_D)
 	joinafter := func(ctx context.Context, b *readline.Buffer) readline.Result {
-		if len(b.Buffer) <= 0 && len(lines) <= 0 {
-			return del.Call(ctx, b)
+		if len(b.Buffer) <= 0 {
+			if len(lines) <= 0 {
+				return del.Call(ctx, b)
+			}
+			if len(lines) == 1 && csrline == 0 {
+				return del.Call(ctx, b)
+			}
 		}
 		if b.Cursor < len(b.Buffer) {
 			return del.Call(ctx, b)
