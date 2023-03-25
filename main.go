@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/nyaosorg/go-readline-ny"
 )
@@ -69,6 +70,22 @@ func Read(ctx context.Context) ([]string, error) {
 	editor.BindKeyClosure(readline.K_CTRL_H, joinbefore)
 	lines := []string{}
 
+	editor.BindKeyClosure(readline.K_CTRL_M, func(_ context.Context, b *readline.Buffer) readline.Result {
+		var sb strings.Builder
+		for _, m := range b.Buffer[b.Cursor:] {
+			m.Moji.WriteTo(&sb)
+		}
+		if csrline >= len(lines) {
+			lines = append(lines, "")
+		}
+		lines = append(lines, "")
+		copy(lines[csrline+2:], lines[csrline+1:])
+		lines[csrline+1] = sb.String()
+		b.Buffer = b.Buffer[:b.Cursor]
+		b.RepaintAll()
+		return readline.ENTER
+	})
+
 	del := editor.GetBindKey(readline.K_CTRL_D)
 	joinafter := func(ctx context.Context, b *readline.Buffer) readline.Result {
 		if len(b.Buffer) <= 0 && len(lines) <= 0 {
@@ -114,20 +131,13 @@ func Read(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 		if press == NEWLINE {
-			tmp := []rune(line)
-			nextline := string(tmp[editor.Cursor:])
-			line = string(tmp[:editor.Cursor])
 			if csrline >= len(lines) {
 				lines = append(lines, line)
 			} else {
 				lines[csrline] = line
 			}
 			csrline++
-			lines = append(lines, "")
-			copy(lines[csrline+1:], lines[csrline:])
-			lines[csrline] = nextline
 			editor.Cursor = 0
-
 			up := 0
 			for i := csrline; ; {
 				fmt.Fprintf(editor.Out, "%2d %s\x1B[0K", i+1, lines[i])
