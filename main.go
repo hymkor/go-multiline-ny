@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/nyaosorg/go-readline-ny"
 )
@@ -155,7 +156,7 @@ func Read(ctx context.Context) ([]string, error) {
 		} else if press == JOINBEFORE {
 			if csrline > 0 {
 				csrline--
-				editor.Cursor = len([]rune(lines[csrline]))
+				editor.Cursor = utf8.RuneCountInString(lines[csrline])
 				lines[csrline] = lines[csrline] + line
 				if csrline+1 < len(lines) {
 					copy(lines[csrline+1:], lines[csrline+2:])
