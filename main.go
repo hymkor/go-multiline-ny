@@ -69,6 +69,31 @@ func Read(ctx context.Context) ([]string, error) {
 	editor.BindKeyClosure(readline.K_CTRL_H, joinbefore)
 	lines := []string{}
 
+	del := editor.GetBindKey(readline.K_CTRL_D)
+	joinafter := func(ctx context.Context, b *readline.Buffer) readline.Result {
+		if len(b.Buffer) <= 0 && len(lines) <= 0 {
+			return del.Call(ctx, b)
+		}
+		if b.Cursor < len(b.Buffer) {
+			return del.Call(ctx, b)
+		}
+		if csrline+1 < len(lines) {
+			b.InsertString(b.Cursor, lines[csrline+1])
+			b.Out.WriteString("\x1B[s")
+			copy(lines[csrline+1:], lines[csrline+2:])
+			lines = lines[:len(lines)-1]
+			for i := csrline + 1; i < len(lines); i++ {
+				fmt.Fprintf(editor.Out, "\n%2d %s\x1B[K", i, lines[i])
+			}
+			b.Out.WriteString("\x1B[J\x1B[u")
+			b.RepaintAll()
+			b.Out.Flush()
+		}
+		return readline.CONTINUE
+	}
+	editor.BindKeyClosure(readline.K_CTRL_D, joinafter)
+	editor.BindKeyClosure(readline.K_DELETE, joinafter)
+
 	editor.Prompt = func() (int, error) {
 		return fmt.Fprintf(editor.Out, "%2d ", csrline+1)
 	}
