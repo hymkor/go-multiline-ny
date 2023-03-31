@@ -4,199 +4,222 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/nyaosorg/go-readline-ny"
 )
 
-func Read(ctx context.Context) ([]string, error) {
-	const (
-		NEWLINE = iota
-		COMMIT
-		UP
-		DOWN
-		JOINBEFORE
-	)
+type MultiLine struct {
+	editor  readline.Editor
+	csrline int
+	lines   []string
 
-	press := NEWLINE
+	after         func(string) bool
+	origBackSpace readline.KeyFuncT
+	origDel       readline.KeyFuncT
+}
 
-	editor := &readline.Editor{}
-
-	editor.BindKeyClosure(readline.K_CTRL_J, func(_ context.Context, B *readline.Buffer) readline.Result {
-		press = COMMIT
-		return readline.ENTER
-	})
-
-	csrline := 0
-	upFunc := func(_ context.Context, _ *readline.Buffer) readline.Result {
-		if csrline <= 0 {
-			return readline.CONTINUE
-		}
-		press = UP
-		return readline.ENTER
+func (m *MultiLine) updateLine(line string) {
+	if m.csrline >= len(m.lines) {
+		m.lines = append(m.lines, line)
+	} else {
+		m.lines[m.csrline] = line
 	}
-	editor.BindKeyClosure(readline.K_CTRL_P, upFunc)
-	editor.BindKeyClosure(readline.K_UP, upFunc)
+}
 
-	editor.LineFeed = func(rc readline.Result) {
-		if rc == readline.ENTER {
-			if press == UP || press == JOINBEFORE {
-				return
-			} else if press == NEWLINE {
-				fmt.Fprintln(editor.Out, "\x1B[0K")
-				return
-			}
-		}
-		fmt.Fprintln(editor.Out)
-	}
-	downFunc := func(_ context.Context, _ *readline.Buffer) readline.Result {
-		press = DOWN
-		return readline.ENTER
-	}
-	editor.BindKeyClosure(readline.K_DOWN, downFunc)
-	editor.BindKeyClosure(readline.K_CTRL_N, downFunc)
-
-	bs := editor.GetBindKey(readline.K_CTRL_H)
-	joinbefore := func(ctx context.Context, b *readline.Buffer) readline.Result {
-		if b.Cursor > 0 {
-			return bs.Call(ctx, b)
-		}
-		if csrline == 0 {
-			return readline.CONTINUE
-		}
-		press = JOINBEFORE
-		return readline.ENTER
-	}
-	editor.BindKeyClosure(readline.K_CTRL_H, joinbefore)
-	lines := []string{}
-
-	editor.BindKeyClosure(readline.K_CTRL_M, func(_ context.Context, b *readline.Buffer) readline.Result {
-		var sb strings.Builder
-		for _, m := range b.Buffer[b.Cursor:] {
-			m.Moji.WriteTo(&sb)
-		}
-		if csrline >= len(lines) {
-			lines = append(lines, "")
-		}
-		lines = append(lines, "")
-		copy(lines[csrline+2:], lines[csrline+1:])
-		lines[csrline+1] = sb.String()
-		b.Buffer = b.Buffer[:b.Cursor]
-		b.RepaintAll()
-		return readline.ENTER
-	})
-
-	del := editor.GetBindKey(readline.K_CTRL_D)
-	joinafter := func(ctx context.Context, b *readline.Buffer) readline.Result {
-		if len(b.Buffer) <= 0 {
-			if len(lines) <= 0 {
-				return del.Call(ctx, b)
-			}
-			if len(lines) == 1 && csrline == 0 {
-				return del.Call(ctx, b)
-			}
-		}
-		if b.Cursor < len(b.Buffer) {
-			return del.Call(ctx, b)
-		}
-		if csrline+1 < len(lines) {
-			b.InsertString(b.Cursor, lines[csrline+1])
-			b.Out.WriteString("\x1B[s")
-			copy(lines[csrline+1:], lines[csrline+2:])
-			lines = lines[:len(lines)-1]
-			for i := csrline + 1; i < len(lines); i++ {
-				fmt.Fprintf(editor.Out, "\n%2d %s\x1B[K", i, lines[i])
-			}
-			b.Out.WriteString("\x1B[J\x1B[u")
-			b.RepaintAll()
-			b.Out.Flush()
-		}
+func (m *MultiLine) up(_ context.Context, _ *readline.Buffer) readline.Result {
+	if m.csrline <= 0 {
 		return readline.CONTINUE
 	}
-	editor.BindKeyClosure(readline.K_CTRL_D, joinafter)
-	editor.BindKeyClosure(readline.K_DELETE, joinafter)
-
-	editor.Prompt = func() (int, error) {
-		return fmt.Fprintf(editor.Out, "%2d ", csrline+1)
+	m.after = func(line string) bool {
+		m.updateLine(line)
+		m.csrline--
+		fmt.Fprint(m.editor.Out, "\r\x1B[A")
+		return true
 	}
-	for {
-		if csrline < len(lines) {
-			editor.Default = lines[csrline]
-		} else {
-			editor.Default = ""
+	return readline.ENTER
+}
+
+func (m *MultiLine) submit(_ context.Context, B *readline.Buffer) readline.Result {
+	fmt.Fprintln(m.editor.Out)
+	for i := m.csrline + 1; i < len(m.lines); i++ {
+		fmt.Fprintln(m.editor.Out)
+	}
+	m.editor.Out.Flush()
+	m.after = func(line string) bool {
+		m.updateLine(line)
+		return false
+	}
+	return readline.ENTER
+}
+
+func (m *MultiLine) down(_ context.Context, _ *readline.Buffer) readline.Result {
+	if m.csrline >= len(m.lines)-1 {
+		return readline.CONTINUE
+	}
+	fmt.Fprintln(m.editor.Out)
+	m.after = func(line string) bool {
+		m.updateLine(line)
+		m.csrline++
+		return true
+	}
+	return readline.ENTER
+}
+
+func (m *MultiLine) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
+	if b.Cursor > 0 {
+		return m.origBackSpace.Call(ctx, b)
+	}
+	if m.csrline == 0 {
+		return readline.CONTINUE
+	}
+	m.after = func(line string) bool {
+		if m.csrline > 0 {
+			m.csrline--
+			m.editor.Cursor = utf8.RuneCountInString(m.lines[m.csrline])
+			m.lines[m.csrline] = m.lines[m.csrline] + line
+			if m.csrline+1 < len(m.lines) {
+				copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
+				m.lines = m.lines[:len(m.lines)-1]
+			}
+			io.WriteString(m.editor.Out, "\x1B[A\r\x1B[s")
+			if m.csrline < len(m.lines) {
+				i := m.csrline
+				for {
+					fmt.Fprintf(m.editor.Out, "%2d %s\x1B[0K", i+1, m.lines[i])
+					i++
+					if i >= len(m.lines) {
+						break
+					}
+					fmt.Fprintln(m.editor.Out)
+				}
+			}
+			io.WriteString(m.editor.Out, "\x1B[J\x1B[u")
 		}
-		line, err := editor.ReadLine(ctx)
+		return true
+	}
+	return readline.ENTER
+}
+
+func (m *MultiLine) newLine(_ context.Context, b *readline.Buffer) readline.Result {
+	var sb strings.Builder
+	for _, mm := range b.Buffer[b.Cursor:] {
+		mm.Moji.WriteTo(&sb)
+	}
+	if m.csrline >= len(m.lines) {
+		m.lines = append(m.lines, "")
+	}
+	m.lines = append(m.lines, "")
+	copy(m.lines[m.csrline+2:], m.lines[m.csrline+1:])
+	m.lines[m.csrline+1] = sb.String()
+	b.Buffer = b.Buffer[:b.Cursor]
+	b.RepaintAll()
+
+	m.after = func(line string) bool {
+		io.WriteString(m.editor.Out, "\x1B[K\n\x1B[s")
+		m.updateLine(line)
+		m.editor.Cursor = 0
+		m.csrline++
+		if m.csrline < len(m.lines) {
+			i := m.csrline
+			for {
+				fmt.Fprintf(m.editor.Out, "%2d %s\x1B[0K", i+1, m.lines[i])
+				i++
+				if i >= len(m.lines) {
+					break
+				}
+				fmt.Fprintln(m.editor.Out)
+			}
+		}
+		io.WriteString(m.editor.Out, "\x1B[J\x1B[u")
+		return true
+	}
+	return readline.ENTER
+}
+
+func (m *MultiLine) joinBelow(ctx context.Context, b *readline.Buffer) readline.Result {
+	if len(b.Buffer) <= 0 {
+		if len(m.lines) <= 0 {
+			return m.origDel.Call(ctx, b)
+		}
+		if len(m.lines) == 1 && m.csrline == 0 {
+			return m.origDel.Call(ctx, b)
+		}
+	}
+	if b.Cursor < len(b.Buffer) {
+		return m.origDel.Call(ctx, b)
+	}
+	if m.csrline+1 < len(m.lines) {
+		b.InsertString(b.Cursor, m.lines[m.csrline+1])
+		b.Out.WriteString("\x1B[s")
+		copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
+		m.lines = m.lines[:len(m.lines)-1]
+		for i := m.csrline + 1; i < len(m.lines); i++ {
+			fmt.Fprintf(m.editor.Out, "\n%2d %s\x1B[K", i+1, m.lines[i])
+		}
+		b.Out.WriteString("\x1B[J\x1B[u")
+		b.RepaintAll()
+		b.Out.Flush()
+	}
+	return readline.CONTINUE
+}
+
+func New() *MultiLine {
+	m := &MultiLine{}
+
+	m.origDel = m.editor.GetBindKey(readline.K_CTRL_D)
+	m.origBackSpace = m.editor.GetBindKey(readline.K_CTRL_H)
+	m.editor.LineFeed = func(rc readline.Result) {
+		if rc != readline.ENTER {
+			fmt.Fprintln(m.editor.Out)
+		}
+	}
+	m.editor.Prompt = func() (int, error) {
+		return fmt.Fprintf(m.editor.Out, "%2d ", m.csrline+1)
+	}
+	m.editor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
+	m.editor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
+	m.editor.BindKeyClosure(readline.K_CTRL_J, m.submit)
+	m.editor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
+	m.editor.BindKeyClosure(readline.K_CTRL_N, m.down)
+	m.editor.BindKeyClosure(readline.K_CTRL_P, m.up)
+	m.editor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
+	m.editor.BindKeyClosure(readline.K_DOWN, m.down)
+	m.editor.BindKeyClosure(readline.K_UP, m.up)
+	return m
+}
+
+func (m *MultiLine) Read(ctx context.Context) ([]string, error) {
+	m.csrline = 0
+	m.lines = []string{}
+
+	for {
+		if m.csrline < len(m.lines) {
+			m.editor.Default = m.lines[m.csrline]
+		} else {
+			m.editor.Default = ""
+		}
+		m.after = func(string) bool { return true }
+		line, err := m.editor.ReadLine(ctx)
 		if err != nil {
 			if errors.Is(err, readline.CtrlC) {
-				lines = lines[:0]
-				csrline = 0
-				fmt.Fprintln(editor.Out, "^C")
+				m.lines = m.lines[:0]
+				m.csrline = 0
+				fmt.Fprintln(m.editor.Out, "^C")
 				continue
 			}
 			return nil, err
 		}
-		if press == NEWLINE {
-			if csrline >= len(lines) {
-				lines = append(lines, line)
-			} else {
-				lines[csrline] = line
-			}
-			csrline++
-			editor.Cursor = 0
-			up := 0
-			for i := csrline; ; {
-				fmt.Fprintf(editor.Out, "%2d %s\x1B[0K", i+1, lines[i])
-				i++
-				if i >= len(lines) {
-					fmt.Fprint(editor.Out, "\r")
-					break
-				}
-				fmt.Fprintln(editor.Out)
-				up++
-			}
-			if up > 0 {
-				fmt.Fprintf(editor.Out, "\x1B[%dA", up)
-			}
-		} else if press == JOINBEFORE {
-			if csrline > 0 {
-				csrline--
-				editor.Cursor = utf8.RuneCountInString(lines[csrline])
-				lines[csrline] = lines[csrline] + line
-				if csrline+1 < len(lines) {
-					copy(lines[csrline+1:], lines[csrline+2:])
-					lines = lines[:len(lines)-1]
-				}
-				fmt.Fprint(editor.Out, "\x1B[A\r")
-				for i := csrline; i < len(lines); i++ {
-					fmt.Fprintf(editor.Out, "%2d %s\x1B[0K\n", i+1, lines[i])
-				}
-				if len(lines) > csrline {
-					fmt.Fprintf(editor.Out, "\x1B[0K\x1B[%dA", len(lines)-csrline)
-				}
-			}
-			press = NEWLINE
-		} else {
-			if csrline >= len(lines) {
-				lines = append(lines, line)
-			} else {
-				lines[csrline] = line
-			}
-			if press == COMMIT {
-				for i := csrline + 1; i < len(lines); i++ {
-					fmt.Fprintln(editor.Out)
-				}
-				editor.Out.Flush()
-				return lines, nil
-			} else if press == UP {
-				press = NEWLINE
-				csrline--
-				fmt.Fprint(editor.Out, "\r\x1B[A")
-			} else if press == DOWN {
-				press = NEWLINE
-				csrline++
-			}
+		m.editor.Out.Flush()
+		if !m.after(line) {
+			return m.lines, nil
 		}
-		editor.Out.Flush()
+		m.editor.Out.Flush()
 	}
+}
+
+func Read(ctx context.Context) ([]string, error) {
+	return New().Read(ctx)
 }
