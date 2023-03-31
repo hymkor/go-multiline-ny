@@ -166,6 +166,31 @@ func (m *MultiLine) joinBelow(ctx context.Context, b *readline.Buffer) readline.
 	return readline.CONTINUE
 }
 
+func (m *MultiLine) printAfter(i int) {
+	if i < len(m.lines) {
+		for {
+			fmt.Fprintf(m.editor.Out, "%2d %s\x1B[K", i+1, m.lines[i])
+			i++
+			if i >= len(m.lines) {
+				break
+			}
+			fmt.Fprintln(m.editor.Out)
+		}
+	}
+	io.WriteString(m.editor.Out, "\x1B[J")
+	m.editor.Out.Flush()
+}
+
+func (m *MultiLine) repaint(_ context.Context, b *readline.Buffer) readline.Result {
+	io.WriteString(m.editor.Out, "\x1B[1;1H\x1B[2J")
+	m.printAfter(0)
+	if m.csrline < len(m.lines)-1 {
+		fmt.Fprintf(m.editor.Out, "\x1B[%dA", len(m.lines)-1-m.csrline)
+	}
+	b.RepaintAll()
+	return readline.CONTINUE
+}
+
 func New() *MultiLine {
 	m := &MultiLine{}
 
@@ -182,6 +207,7 @@ func New() *MultiLine {
 	m.editor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
 	m.editor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
 	m.editor.BindKeyClosure(readline.K_CTRL_J, m.submit)
+	m.editor.BindKeyClosure(readline.K_CTRL_L, m.repaint)
 	m.editor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
 	m.editor.BindKeyClosure(readline.K_CTRL_N, m.down)
 	m.editor.BindKeyClosure(readline.K_CTRL_P, m.up)
