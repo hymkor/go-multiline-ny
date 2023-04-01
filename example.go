@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hymkor/go-multiline-ny"
+	"github.com/mattn/go-colorable"
 )
 
 func main() {
@@ -25,6 +26,11 @@ func main() {
 	editor.Prompt = func(w io.Writer, lnum int) (int, error) {
 		return fmt.Fprintf(w, "[%d] ", lnum+1)
 	}
+
+	// To enable escape sequence on Windows.
+	// (On other operating systems, it can be ommited)
+	editor.LineEditor.Writer = colorable.NewColorableStdout()
+
 	for {
 		lines, err := editor.Read(ctx)
 		if err != nil {
