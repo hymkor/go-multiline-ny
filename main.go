@@ -12,10 +12,10 @@ import (
 )
 
 type Editor struct {
-	editor  readline.Editor
-	csrline int
-	lines   []string
-	inited  bool
+	LineEditor readline.Editor
+	csrline    int
+	lines      []string
+	inited     bool
 
 	after         func(string) bool
 	origBackSpace readline.KeyFuncT
@@ -39,18 +39,18 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	m.after = func(line string) bool {
 		m.updateLine(line)
 		m.csrline--
-		fmt.Fprint(m.editor.Out, "\r\x1B[A")
+		fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
 		return true
 	}
 	return readline.ENTER
 }
 
 func (m *Editor) submit(_ context.Context, B *readline.Buffer) readline.Result {
-	fmt.Fprintln(m.editor.Out)
+	fmt.Fprintln(m.LineEditor.Out)
 	for i := m.csrline + 1; i < len(m.lines); i++ {
-		fmt.Fprintln(m.editor.Out)
+		fmt.Fprintln(m.LineEditor.Out)
 	}
-	m.editor.Out.Flush()
+	m.LineEditor.Out.Flush()
 	m.after = func(line string) bool {
 		m.updateLine(line)
 		return false
@@ -62,7 +62,7 @@ func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 	if m.csrline >= len(m.lines)-1 {
 		return readline.CONTINUE
 	}
-	fmt.Fprintln(m.editor.Out)
+	fmt.Fprintln(m.LineEditor.Out)
 	m.after = func(line string) bool {
 		m.updateLine(line)
 		m.csrline++
@@ -81,15 +81,15 @@ func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Res
 	m.after = func(line string) bool {
 		if m.csrline > 0 {
 			m.csrline--
-			m.editor.Cursor = utf8.RuneCountInString(m.lines[m.csrline])
+			m.LineEditor.Cursor = utf8.RuneCountInString(m.lines[m.csrline])
 			m.lines[m.csrline] = m.lines[m.csrline] + line
 			if m.csrline+1 < len(m.lines) {
 				copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
 				m.lines = m.lines[:len(m.lines)-1]
 			}
-			io.WriteString(m.editor.Out, "\x1B[A\r\x1B[s")
+			io.WriteString(m.LineEditor.Out, "\x1B[A\r\x1B[s")
 			m.printAfter(m.csrline)
-			io.WriteString(m.editor.Out, "\x1B[u")
+			io.WriteString(m.LineEditor.Out, "\x1B[u")
 		}
 		return true
 	}
@@ -111,13 +111,13 @@ func (m *Editor) newLine(_ context.Context, b *readline.Buffer) readline.Result 
 	b.RepaintAll()
 
 	m.after = func(line string) bool {
-		io.WriteString(m.editor.Out, "\x1B[K\n")
+		io.WriteString(m.LineEditor.Out, "\x1B[K\n")
 		m.updateLine(line)
-		m.editor.Cursor = 0
+		m.LineEditor.Cursor = 0
 		m.csrline++
 		lfCount := m.printAfter(m.csrline)
 		if lfCount > 0 {
-			fmt.Fprintf(m.editor.Out, "\x1B[%dA", lfCount)
+			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
 		}
 		return true
 	}
@@ -142,9 +142,9 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 		copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
 		m.lines = m.lines[:len(m.lines)-1]
 		for i := m.csrline + 1; i < len(m.lines); i++ {
-			fmt.Fprintln(m.editor.Out)
-			m.Prompt(m.editor.Out, i)
-			fmt.Fprintf(m.editor.Out, "%s\x1B[K", m.lines[i])
+			fmt.Fprintln(m.LineEditor.Out)
+			m.Prompt(m.LineEditor.Out, i)
+			fmt.Fprintf(m.LineEditor.Out, "%s\x1B[K", m.lines[i])
 		}
 		b.Out.WriteString("\x1B[J\x1B[u")
 		b.RepaintAll()
@@ -157,26 +157,26 @@ func (m *Editor) printAfter(i int) int {
 	lfCount := 0
 	if i < len(m.lines) {
 		for {
-			m.Prompt(m.editor.Out, i)
-			fmt.Fprintf(m.editor.Out, "%s\x1B[K", m.lines[i])
+			m.Prompt(m.LineEditor.Out, i)
+			fmt.Fprintf(m.LineEditor.Out, "%s\x1B[K", m.lines[i])
 			i++
 			if i >= len(m.lines) {
 				break
 			}
-			fmt.Fprintln(m.editor.Out)
+			fmt.Fprintln(m.LineEditor.Out)
 			lfCount++
 		}
 	}
-	io.WriteString(m.editor.Out, "\x1B[J")
-	m.editor.Out.Flush()
+	io.WriteString(m.LineEditor.Out, "\x1B[J")
+	m.LineEditor.Out.Flush()
 	return lfCount
 }
 
 func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result {
-	io.WriteString(m.editor.Out, "\x1B[1;1H\x1B[2J")
+	io.WriteString(m.LineEditor.Out, "\x1B[1;1H\x1B[2J")
 	m.printAfter(0)
 	if m.csrline < len(m.lines)-1 {
-		fmt.Fprintf(m.editor.Out, "\x1B[%dA", len(m.lines)-1-m.csrline)
+		fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", len(m.lines)-1-m.csrline)
 	}
 	b.RepaintAll()
 	return readline.CONTINUE
@@ -184,29 +184,29 @@ func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result 
 
 func (m *Editor) init() {
 	m.inited = true
-	m.origDel = m.editor.GetBindKey(readline.K_CTRL_D)
-	m.origBackSpace = m.editor.GetBindKey(readline.K_CTRL_H)
-	m.editor.LineFeed = func(rc readline.Result) {
+	m.origDel = m.LineEditor.GetBindKey(readline.K_CTRL_D)
+	m.origBackSpace = m.LineEditor.GetBindKey(readline.K_CTRL_H)
+	m.LineEditor.LineFeed = func(rc readline.Result) {
 		if rc != readline.ENTER {
-			fmt.Fprintln(m.editor.Out)
+			fmt.Fprintln(m.LineEditor.Out)
 		}
 	}
 	m.Prompt = func(w io.Writer, i int) (int, error) {
 		return fmt.Fprintf(w, "%2d ", i+1)
 	}
-	m.editor.Prompt = func() (int, error) {
-		return m.Prompt(m.editor.Out, m.csrline)
+	m.LineEditor.Prompt = func() (int, error) {
+		return m.Prompt(m.LineEditor.Out, m.csrline)
 	}
-	m.editor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
-	m.editor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
-	m.editor.BindKeyClosure(readline.K_CTRL_J, m.submit)
-	m.editor.BindKeyClosure(readline.K_CTRL_L, m.repaint)
-	m.editor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
-	m.editor.BindKeyClosure(readline.K_CTRL_N, m.down)
-	m.editor.BindKeyClosure(readline.K_CTRL_P, m.up)
-	m.editor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
-	m.editor.BindKeyClosure(readline.K_DOWN, m.down)
-	m.editor.BindKeyClosure(readline.K_UP, m.up)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.submit)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_L, m.repaint)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_N, m.down)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_P, m.up)
+	m.LineEditor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
+	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
+	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
 }
 
 func New() *Editor {
@@ -224,26 +224,26 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 
 	for {
 		if m.csrline < len(m.lines) {
-			m.editor.Default = m.lines[m.csrline]
+			m.LineEditor.Default = m.lines[m.csrline]
 		} else {
-			m.editor.Default = ""
+			m.LineEditor.Default = ""
 		}
 		m.after = func(string) bool { return true }
-		line, err := m.editor.ReadLine(ctx)
+		line, err := m.LineEditor.ReadLine(ctx)
 		if err != nil {
 			if errors.Is(err, readline.CtrlC) {
 				m.lines = m.lines[:0]
 				m.csrline = 0
-				fmt.Fprintln(m.editor.Out, "^C")
+				fmt.Fprintln(m.LineEditor.Out, "^C")
 				continue
 			}
 			return nil, err
 		}
-		m.editor.Out.Flush()
+		m.LineEditor.Out.Flush()
 		if !m.after(line) {
 			return m.lines, nil
 		}
-		m.editor.Out.Flush()
+		m.LineEditor.Out.Flush()
 	}
 }
 
