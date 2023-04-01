@@ -181,9 +181,7 @@ func (m *MultiLine) repaint(_ context.Context, b *readline.Buffer) readline.Resu
 	return readline.CONTINUE
 }
 
-func New() *MultiLine {
-	m := &MultiLine{}
-
+func (m *MultiLine) init() {
 	m.origDel = m.editor.GetBindKey(readline.K_CTRL_D)
 	m.origBackSpace = m.editor.GetBindKey(readline.K_CTRL_H)
 	m.editor.LineFeed = func(rc readline.Result) {
@@ -207,6 +205,11 @@ func New() *MultiLine {
 	m.editor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
 	m.editor.BindKeyClosure(readline.K_DOWN, m.down)
 	m.editor.BindKeyClosure(readline.K_UP, m.up)
+}
+
+func New() *MultiLine {
+	m := &MultiLine{}
+	m.init()
 	return m
 }
 
@@ -240,5 +243,7 @@ func (m *MultiLine) Read(ctx context.Context) ([]string, error) {
 }
 
 func Read(ctx context.Context) ([]string, error) {
-	return New().Read(ctx)
+	var m MultiLine
+	m.init()
+	return m.Read(ctx)
 }
