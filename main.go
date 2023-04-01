@@ -11,7 +11,7 @@ import (
 	"github.com/nyaosorg/go-readline-ny"
 )
 
-type MultiLine struct {
+type Editor struct {
 	editor  readline.Editor
 	csrline int
 	lines   []string
@@ -23,7 +23,7 @@ type MultiLine struct {
 	Prompt func(w io.Writer, i int) (int, error)
 }
 
-func (m *MultiLine) updateLine(line string) {
+func (m *Editor) updateLine(line string) {
 	if m.csrline >= len(m.lines) {
 		m.lines = append(m.lines, line)
 	} else {
@@ -31,7 +31,7 @@ func (m *MultiLine) updateLine(line string) {
 	}
 }
 
-func (m *MultiLine) up(_ context.Context, _ *readline.Buffer) readline.Result {
+func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	if m.csrline <= 0 {
 		return readline.CONTINUE
 	}
@@ -44,7 +44,7 @@ func (m *MultiLine) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-func (m *MultiLine) submit(_ context.Context, B *readline.Buffer) readline.Result {
+func (m *Editor) submit(_ context.Context, B *readline.Buffer) readline.Result {
 	fmt.Fprintln(m.editor.Out)
 	for i := m.csrline + 1; i < len(m.lines); i++ {
 		fmt.Fprintln(m.editor.Out)
@@ -57,7 +57,7 @@ func (m *MultiLine) submit(_ context.Context, B *readline.Buffer) readline.Resul
 	return readline.ENTER
 }
 
-func (m *MultiLine) down(_ context.Context, _ *readline.Buffer) readline.Result {
+func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 	if m.csrline >= len(m.lines)-1 {
 		return readline.CONTINUE
 	}
@@ -70,7 +70,7 @@ func (m *MultiLine) down(_ context.Context, _ *readline.Buffer) readline.Result 
 	return readline.ENTER
 }
 
-func (m *MultiLine) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return m.origBackSpace.Call(ctx, b)
 	}
@@ -95,7 +95,7 @@ func (m *MultiLine) joinAbove(ctx context.Context, b *readline.Buffer) readline.
 	return readline.ENTER
 }
 
-func (m *MultiLine) newLine(_ context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) newLine(_ context.Context, b *readline.Buffer) readline.Result {
 	var sb strings.Builder
 	for _, mm := range b.Buffer[b.Cursor:] {
 		mm.Moji.WriteTo(&sb)
@@ -123,7 +123,7 @@ func (m *MultiLine) newLine(_ context.Context, b *readline.Buffer) readline.Resu
 	return readline.ENTER
 }
 
-func (m *MultiLine) joinBelow(ctx context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Result {
 	if len(b.Buffer) <= 0 {
 		if len(m.lines) <= 0 {
 			return m.origDel.Call(ctx, b)
@@ -152,7 +152,7 @@ func (m *MultiLine) joinBelow(ctx context.Context, b *readline.Buffer) readline.
 	return readline.CONTINUE
 }
 
-func (m *MultiLine) printAfter(i int) int {
+func (m *Editor) printAfter(i int) int {
 	lfCount := 0
 	if i < len(m.lines) {
 		for {
@@ -171,7 +171,7 @@ func (m *MultiLine) printAfter(i int) int {
 	return lfCount
 }
 
-func (m *MultiLine) repaint(_ context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result {
 	io.WriteString(m.editor.Out, "\x1B[1;1H\x1B[2J")
 	m.printAfter(0)
 	if m.csrline < len(m.lines)-1 {
@@ -181,7 +181,7 @@ func (m *MultiLine) repaint(_ context.Context, b *readline.Buffer) readline.Resu
 	return readline.CONTINUE
 }
 
-func (m *MultiLine) init() {
+func (m *Editor) init() {
 	m.origDel = m.editor.GetBindKey(readline.K_CTRL_D)
 	m.origBackSpace = m.editor.GetBindKey(readline.K_CTRL_H)
 	m.editor.LineFeed = func(rc readline.Result) {
@@ -207,13 +207,13 @@ func (m *MultiLine) init() {
 	m.editor.BindKeyClosure(readline.K_UP, m.up)
 }
 
-func New() *MultiLine {
-	m := &MultiLine{}
+func New() *Editor {
+	m := &Editor{}
 	m.init()
 	return m
 }
 
-func (m *MultiLine) Read(ctx context.Context) ([]string, error) {
+func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	m.csrline = 0
 	m.lines = []string{}
 
@@ -243,7 +243,7 @@ func (m *MultiLine) Read(ctx context.Context) ([]string, error) {
 }
 
 func Read(ctx context.Context) ([]string, error) {
-	var m MultiLine
+	var m Editor
 	m.init()
 	return m.Read(ctx)
 }
