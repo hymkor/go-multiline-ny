@@ -5,31 +5,34 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/hymkor/go-multiline-ny"
 )
 
 func main() {
 	ctx := context.Background()
-	fmt.Println("Enter, DOWN or Ctrl-N: New line or move to the next line")
-	fmt.Println("UP or Ctrl-P: Move to the previous line.")
-	fmt.Println("Ctrl-Enter: Submit")
-	fmt.Println("Ctrl-C: Cancel lines.")
-	fmt.Println("Ctrl-D: Quit.")
+	fmt.Println("Ctrl-M or Enter      : Insert a linefeed")
+	fmt.Println("Ctrl-N or DOWN       : Move to the next line")
+	fmt.Println("Ctrl-P or UP         : Move to the previous line.")
+	fmt.Println("Ctrl-J or Ctrl-Enter : Submit")
+	fmt.Println("Ctrl-C               : Cancel lines.")
+	fmt.Println("Ctrl-D with no chars : Quit.")
+
+	editor := multiline.New()
+	editor.Prompt = func(w io.Writer, lnum int) (int, error) {
+		return fmt.Fprintf(w, "[%d] ", lnum+1)
+	}
 	for {
-		lines, err := multiline.Read(ctx)
+		lines, err := editor.Read(ctx)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
 			return
 		}
 		fmt.Println("-----")
-		for len(lines) > 0 && lines[len(lines)-1] == "" {
-			lines = lines[:len(lines)-1]
-		}
-		for _, s := range lines {
-			fmt.Println(s)
-		}
+		fmt.Println(strings.Join(lines, "\n"))
 		fmt.Println("-----")
 	}
 }
