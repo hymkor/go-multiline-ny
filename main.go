@@ -15,6 +15,7 @@ type Editor struct {
 	editor  readline.Editor
 	csrline int
 	lines   []string
+	inited  bool
 
 	after         func(string) bool
 	origBackSpace readline.KeyFuncT
@@ -182,6 +183,7 @@ func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result 
 }
 
 func (m *Editor) init() {
+	m.inited = true
 	m.origDel = m.editor.GetBindKey(readline.K_CTRL_D)
 	m.origBackSpace = m.editor.GetBindKey(readline.K_CTRL_H)
 	m.editor.LineFeed = func(rc readline.Result) {
@@ -214,6 +216,9 @@ func New() *Editor {
 }
 
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
+	if !m.inited {
+		m.init()
+	}
 	m.csrline = 0
 	m.lines = []string{}
 
@@ -244,6 +249,5 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 
 func Read(ctx context.Context) ([]string, error) {
 	var m Editor
-	m.init()
 	return m.Read(ctx)
 }

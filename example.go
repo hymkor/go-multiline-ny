@@ -21,7 +21,7 @@ func main() {
 	fmt.Println("Ctrl-C               : Cancel lines.")
 	fmt.Println("Ctrl-D with no chars : Quit.")
 
-	editor := multiline.New()
+	var editor multiline.Editor
 	editor.Prompt = func(w io.Writer, lnum int) (int, error) {
 		return fmt.Fprintf(w, "[%d] ", lnum+1)
 	}
