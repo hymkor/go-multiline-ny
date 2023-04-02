@@ -2,7 +2,7 @@ module github.com/hymkor/go-multiline-ny
 
 go 1.20
 
-require github.com/nyaosorg/go-readline-ny v0.8.4
+require github.com/nyaosorg/go-readline-ny v0.8.5
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect
