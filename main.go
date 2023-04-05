@@ -20,6 +20,7 @@ type Editor struct {
 	after         func(string) bool
 	origBackSpace readline.KeyFuncT
 	origDel       readline.KeyFuncT
+	historyPtr    int
 
 	Prompt func(w io.Writer, i int) (int, error)
 }
@@ -182,6 +183,54 @@ func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result 
 	return readline.CONTINUE
 }
 
+func (m *Editor) printCurrentHistoryRecord(string) bool {
+	// clear
+	if m.csrline > 0 {
+		fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", m.csrline)
+	}
+	io.WriteString(m.LineEditor.Out, "\r")
+
+	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
+	m.csrline = 0
+	for m.csrline < len(m.lines)-1 {
+		m.Prompt(m.LineEditor.Out, m.csrline)
+		fmt.Fprintf(m.LineEditor.Out, "%s\x1B[K\n", m.lines[m.csrline])
+		m.csrline++
+	}
+	fmt.Fprint(m.LineEditor.Out, "\x1B[J")
+	return true
+}
+
+func (m *Editor) prevHistory(_ context.Context, b *readline.Buffer) readline.Result {
+	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
+		return readline.CONTINUE
+	}
+	if m.historyPtr <= 0 {
+		if !m.LineEditor.HistoryCycling {
+			return readline.CONTINUE
+		}
+		m.historyPtr = m.LineEditor.History.Len()
+	}
+	m.historyPtr--
+	m.after = m.printCurrentHistoryRecord
+	return readline.ENTER
+}
+
+func (m *Editor) nextHistory(_ context.Context, b *readline.Buffer) readline.Result {
+	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
+		return readline.CONTINUE
+	}
+	if m.historyPtr+1 >= m.LineEditor.History.Len() {
+		if !m.LineEditor.HistoryCycling {
+			return readline.CONTINUE
+		}
+		m.historyPtr = -1
+	}
+	m.historyPtr++
+	m.after = m.printCurrentHistoryRecord
+	return readline.ENTER
+}
+
 func (m *Editor) init() {
 	m.inited = true
 	m.origDel = m.LineEditor.GetBindKey(readline.K_CTRL_D)
@@ -197,13 +246,17 @@ func (m *Editor) init() {
 	m.LineEditor.Prompt = func() (int, error) {
 		return m.Prompt(m.LineEditor.Out, m.csrline)
 	}
+	m.LineEditor.BindKeyClosure(readline.K_ALT_N, m.nextHistory)
+	m.LineEditor.BindKeyClosure(readline.K_ALT_P, m.prevHistory)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_DOWN, m.nextHistory)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.submit)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_L, m.repaint)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_N, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_P, m.up)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_UP, m.prevHistory)
 	m.LineEditor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
 	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
@@ -221,6 +274,9 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	}
 	m.csrline = 0
 	m.lines = []string{}
+	if m.LineEditor.History != nil {
+		m.historyPtr = m.LineEditor.History.Len()
+	}
 
 	for {
 		if m.csrline < len(m.lines) {
