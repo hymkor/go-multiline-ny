@@ -231,6 +231,19 @@ func (m *Editor) nextHistory(_ context.Context, b *readline.Buffer) readline.Res
 	return readline.ENTER
 }
 
+func (m *Editor) clear(_ context.Context, b *readline.Buffer) readline.Result {
+	m.after = func(string) bool {
+		if m.csrline > 0 {
+			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", m.csrline)
+		}
+		io.WriteString(m.LineEditor.Out, "\r\x1B[J")
+		m.csrline = 0
+		m.lines = m.lines[:0]
+		return true
+	}
+	return readline.ENTER
+}
+
 func (m *Editor) init() {
 	m.inited = true
 	m.origDel = m.LineEditor.GetBindKey(readline.K_CTRL_D)
@@ -259,6 +272,7 @@ func (m *Editor) init() {
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_UP, m.prevHistory)
 	m.LineEditor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
 	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
+	m.LineEditor.BindKeyClosure(readline.K_ESCAPE, m.clear)
 	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
 }
 
