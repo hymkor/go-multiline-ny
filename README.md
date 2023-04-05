@@ -3,6 +3,17 @@ go-multiline-ny
 
 This is the readline package supporting multi-lines that extends [go-readline-ny]
 
+The new key-bindings
+
+| Key | Feature
+|-----|---------
+| Ctrl-M or Enter | Insert a new line
+| Ctrl-J or Ctrl-Enter | Submit all lines
+| Ctrl-P or Up | Move the cursor to the next line
+| Ctrl-N or Down | Move the cursor to the next line
+| Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
+| Alt-N or Ctrl-Down | Fetch the next lines-set of the history
+
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
 
 ![image](./demo.gif)
