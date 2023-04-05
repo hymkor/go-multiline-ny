@@ -97,17 +97,17 @@ func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Res
 }
 
 func (m *Editor) newLine(_ context.Context, b *readline.Buffer) readline.Result {
-	var sb strings.Builder
-	for _, mm := range b.Buffer[b.Cursor:] {
-		mm.Moji.WriteTo(&sb)
-	}
+	// make new line at the next of the cursor
 	if m.csrline >= len(m.lines) {
 		m.lines = append(m.lines, "")
 	}
 	m.lines = append(m.lines, "")
 	copy(m.lines[m.csrline+2:], m.lines[m.csrline+1:])
-	m.lines[m.csrline+1] = sb.String()
+
+	// move characters after cursor to the nextline
+	m.lines[m.csrline+1] = b.SubString(b.Cursor, len(b.Buffer))
 	b.Buffer = b.Buffer[:b.Cursor]
+
 	b.RepaintAll()
 
 	m.after = func(line string) bool {
