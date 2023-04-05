@@ -304,7 +304,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			if errors.Is(err, readline.CtrlC) {
 				m.lines = m.lines[:0]
 				m.csrline = 0
-				fmt.Fprintln(m.LineEditor.Out, "^C")
+				fmt.Fprint(m.LineEditor.Out, "^C\x1B[J\n\n")
 				continue
 			}
 			return nil, err
