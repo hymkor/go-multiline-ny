@@ -253,8 +253,10 @@ func (m *Editor) init() {
 			fmt.Fprintln(m.LineEditor.Out)
 		}
 	}
-	m.Prompt = func(w io.Writer, i int) (int, error) {
-		return fmt.Fprintf(w, "%2d ", i+1)
+	if m.Prompt == nil {
+		m.Prompt = func(w io.Writer, i int) (int, error) {
+			return fmt.Fprintf(w, "%2d ", i+1)
+		}
 	}
 	m.LineEditor.Prompt = func() (int, error) {
 		return m.Prompt(m.LineEditor.Out, m.csrline)
