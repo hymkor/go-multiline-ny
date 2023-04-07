@@ -198,6 +198,7 @@ func (m *Editor) printCurrentHistoryRecord(string) bool {
 		m.csrline++
 	}
 	fmt.Fprint(m.LineEditor.Out, "\x1B[J")
+	m.LineEditor.Cursor = 9999
 	return true
 }
 
