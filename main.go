@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/atotto/clipboard"
+	"github.com/mattn/go-runewidth"
 
 	"github.com/nyaosorg/go-readline-ny"
 )
@@ -23,6 +24,8 @@ type Editor struct {
 	origBackSpace readline.KeyFuncT
 	origDel       readline.KeyFuncT
 	historyPtr    int
+
+	viewWidth int
 
 	Prompt func(w io.Writer, i int) (int, error)
 }
@@ -146,8 +149,7 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 		m.lines = m.lines[:len(m.lines)-1]
 		for i := m.csrline + 1; i < len(m.lines); i++ {
 			fmt.Fprintln(m.LineEditor.Out)
-			m.Prompt(m.LineEditor.Out, i)
-			fmt.Fprintf(m.LineEditor.Out, "%s\x1B[K", m.lines[i])
+			m.printOne(i)
 		}
 		b.Out.WriteString("\x1B[J\x1B[u")
 		b.RepaintAll()
@@ -156,19 +158,34 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 	return readline.CONTINUE
 }
 
+const forbiddenWidth = 3
+
+func (m *Editor) printOne(i int) {
+	w, _ := m.Prompt(m.LineEditor.Out, i)
+	for _, c := range m.lines[i] {
+		if c < 0x20 {
+			if w+2 >= m.viewWidth-forbiddenWidth {
+				break
+			}
+			m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
+			w += 2
+		} else {
+			w1 := runewidth.RuneWidth(c)
+			if w+w1 >= m.viewWidth-forbiddenWidth {
+				break
+			}
+			m.LineEditor.Out.WriteRune(c)
+			w += w1
+		}
+	}
+	io.WriteString(m.LineEditor.Out, "\x1B[K")
+}
+
 func (m *Editor) printFromTo(i, j int) int {
 	lfCount := 0
 	if i < j {
 		for {
-			m.Prompt(m.LineEditor.Out, i)
-			for _, c := range m.lines[i] {
-				if c < 0x20 {
-					m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
-				} else {
-					m.LineEditor.Out.WriteRune(c)
-				}
-			}
-			io.WriteString(m.LineEditor.Out, "\x1B[K")
+			m.printOne(i)
 			i++
 			if i >= j {
 				break
@@ -207,8 +224,8 @@ func (m *Editor) printCurrentHistoryRecord(string) bool {
 	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
 	m.csrline = 0
 	for m.csrline < len(m.lines)-1 {
-		m.Prompt(m.LineEditor.Out, m.csrline)
-		fmt.Fprintf(m.LineEditor.Out, "%s\x1B[K\n", m.lines[m.csrline])
+		m.printOne(m.csrline)
+		fmt.Fprintln(m.LineEditor.Out)
 		m.csrline++
 	}
 	fmt.Fprint(m.LineEditor.Out, "\x1B[J")
@@ -320,7 +337,17 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-func (m *Editor) init() {
+func (m *Editor) init() error {
+	tty1, err := readline.NewDefaultTty()
+	if err != nil {
+		return err
+	}
+	m.viewWidth, _, err = tty1.Size()
+	tty1.Close()
+	if err != nil {
+		return err
+	}
+
 	m.inited = true
 	m.origDel = m.LineEditor.GetBindKey(readline.K_CTRL_D)
 	m.origBackSpace = m.LineEditor.GetBindKey(readline.K_CTRL_H)
@@ -337,6 +364,7 @@ func (m *Editor) init() {
 	m.LineEditor.Prompt = func() (int, error) {
 		return m.Prompt(m.LineEditor.Out, m.csrline)
 	}
+
 	m.LineEditor.BindKeyClosure(readline.K_ALT_N, m.nextHistory)
 	m.LineEditor.BindKeyClosure(readline.K_ALT_P, m.prevHistory)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
@@ -353,17 +381,24 @@ func (m *Editor) init() {
 	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_ESCAPE, m.clear)
 	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
+
+	return nil
 }
 
+// Deprecated: should not be used.
 func New() *Editor {
 	m := &Editor{}
-	m.init()
+	if err := m.init(); err != nil {
+		panic(err.Error())
+	}
 	return m
 }
 
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if !m.inited {
-		m.init()
+		if err := m.init(); err != nil {
+			return nil, err
+		}
 	}
 	m.csrline = 0
 	m.lines = []string{}
