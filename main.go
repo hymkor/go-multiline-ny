@@ -159,7 +159,14 @@ func (m *Editor) printAfter(i int) int {
 	if i < len(m.lines) {
 		for {
 			m.Prompt(m.LineEditor.Out, i)
-			fmt.Fprintf(m.LineEditor.Out, "%s\x1B[K", m.lines[i])
+			for _, c := range m.lines[i] {
+				if c < 0x20 {
+					m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
+				} else {
+					m.LineEditor.Out.WriteRune(c)
+				}
+			}
+			io.WriteString(m.LineEditor.Out, "\x1B[K")
 			i++
 			if i >= len(m.lines) {
 				break
