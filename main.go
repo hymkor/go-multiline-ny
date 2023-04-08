@@ -156,9 +156,9 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 	return readline.CONTINUE
 }
 
-func (m *Editor) printAfter(i int) int {
+func (m *Editor) printFromTo(i, j int) int {
 	lfCount := 0
-	if i < len(m.lines) {
+	if i < j {
 		for {
 			m.Prompt(m.LineEditor.Out, i)
 			for _, c := range m.lines[i] {
@@ -170,13 +170,18 @@ func (m *Editor) printAfter(i int) int {
 			}
 			io.WriteString(m.LineEditor.Out, "\x1B[K")
 			i++
-			if i >= len(m.lines) {
+			if i >= j {
 				break
 			}
 			fmt.Fprintln(m.LineEditor.Out)
 			lfCount++
 		}
 	}
+	return lfCount
+}
+
+func (m *Editor) printAfter(i int) int {
+	lfCount := m.printFromTo(i, len(m.lines))
 	io.WriteString(m.LineEditor.Out, "\x1B[J")
 	m.LineEditor.Out.Flush()
 	return lfCount
@@ -272,6 +277,7 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	if len(text) <= 0 {
 		return readline.CONTINUE
 	}
+	text = strings.ReplaceAll(text, "\r\n", "\n")
 	newlines := strings.Split(text, "\n")
 	if len(newlines) <= 0 {
 		return readline.CONTINUE
@@ -290,20 +296,25 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	newlines[len(newlines)-1] += tmp
 
 	m.after = func(line string) bool {
-		m.lines[m.csrline] = line
+		// update the first line
+		if m.csrline < len(m.lines) {
+			m.lines[m.csrline] = line
+		} else {
+			m.lines = append(m.lines, line)
+		}
 		fmt.Fprintln(m.LineEditor.Out)
 		m.csrline++
 
-		insertSliceAt(m.lines, m.csrline, newlines)
+		m.lines = insertSliceAt(m.lines, m.csrline, newlines)
 
-		m.printAfter(m.csrline)
-		m.csrline += len(newlines)
-		lfCount := len(m.lines) - m.csrline
-		fmt.Fprintln(m.LineEditor.Out)
-		if lfCount > 0 {
+		m.printFromTo(m.csrline, m.csrline+len(newlines))
+		if m.csrline+len(newlines) < len(m.lines) {
+			fmt.Fprintln(m.LineEditor.Out)
+			lfCount := 1 + m.printAfter(m.csrline+len(newlines))
 			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
 		}
 		m.LineEditor.Out.Flush()
+		m.csrline += len(newlines) - 1
 		return true
 	}
 	return readline.ENTER
