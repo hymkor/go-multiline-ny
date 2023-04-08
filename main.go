@@ -8,6 +8,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/atotto/clipboard"
+
 	"github.com/nyaosorg/go-readline-ny"
 )
 
@@ -252,6 +254,61 @@ func (m *Editor) clear(_ context.Context, b *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
+func insertSliceAt(slice []string, pos int, newlines []string) []string {
+	backup := make([]string, len(slice)-pos)
+	copy(backup, slice[pos:])
+	slice = slice[:pos]
+	slice = append(slice, newlines...)
+	slice = append(slice, backup...)
+	return slice
+}
+
+func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
+	text, err := clipboard.ReadAll()
+	if err != nil {
+		return readline.CONTINUE
+	}
+	text = strings.TrimRight(text, "\r\n\000")
+	if len(text) <= 0 {
+		return readline.CONTINUE
+	}
+	newlines := strings.Split(text, "\n")
+	if len(newlines) <= 0 {
+		return readline.CONTINUE
+	}
+	if len(newlines) <= 1 {
+		b.InsertAndRepaint(newlines[0])
+		return readline.CONTINUE
+	}
+
+	tmp := b.SubString(b.Cursor, len(b.Buffer))
+	b.Buffer = b.Buffer[:b.Cursor]
+	b.InsertAndRepaint(newlines[0])
+	b.Out.Flush()
+
+	newlines = newlines[1:]
+	newlines[len(newlines)-1] += tmp
+
+	m.after = func(line string) bool {
+		m.lines[m.csrline] = line
+		fmt.Fprintln(m.LineEditor.Out)
+		m.csrline++
+
+		insertSliceAt(m.lines, m.csrline, newlines)
+
+		m.printAfter(m.csrline)
+		m.csrline += len(newlines)
+		lfCount := len(m.lines) - m.csrline
+		fmt.Fprintln(m.LineEditor.Out)
+		if lfCount > 0 {
+			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
+		}
+		m.LineEditor.Out.Flush()
+		return true
+	}
+	return readline.ENTER
+}
+
 func (m *Editor) init() {
 	m.inited = true
 	m.origDel = m.LineEditor.GetBindKey(readline.K_CTRL_D)
@@ -280,6 +337,7 @@ func (m *Editor) init() {
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_N, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_P, m.up)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_UP, m.prevHistory)
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_Y, m.paste)
 	m.LineEditor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
 	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_ESCAPE, m.clear)
