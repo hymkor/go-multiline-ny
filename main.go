@@ -76,6 +76,10 @@ func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
+func mojiCount(s string) int {
+	return utf8.RuneCountInString(s)
+}
+
 func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return m.origBackSpace.Call(ctx, b)
@@ -86,7 +90,7 @@ func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Res
 	m.after = func(line string) bool {
 		if m.csrline > 0 {
 			m.csrline--
-			m.LineEditor.Cursor = utf8.RuneCountInString(m.lines[m.csrline])
+			m.LineEditor.Cursor = mojiCount(m.lines[m.csrline])
 			m.lines[m.csrline] = m.lines[m.csrline] + line
 			if m.csrline+1 < len(m.lines) {
 				copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
@@ -304,6 +308,7 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	}
 
 	tmp := b.SubString(b.Cursor, len(b.Buffer))
+	nextCursorPosition := mojiCount(tmp)
 	b.Buffer = b.Buffer[:b.Cursor]
 	b.InsertAndRepaint(newlines[0])
 	b.Out.Flush()
@@ -331,6 +336,7 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 		}
 		m.LineEditor.Out.Flush()
 		m.csrline += len(newlines) - 1
+		m.LineEditor.Cursor = mojiCount(m.lines[m.csrline]) - nextCursorPosition
 		return true
 	}
 	return readline.ENTER
