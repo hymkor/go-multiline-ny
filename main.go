@@ -2,7 +2,6 @@ package multiline
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -413,12 +412,6 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 		m.after = func(string) bool { return true }
 		line, err := m.LineEditor.ReadLine(ctx)
 		if err != nil {
-			if errors.Is(err, readline.CtrlC) {
-				m.lines = m.lines[:0]
-				m.csrline = 0
-				fmt.Fprint(m.LineEditor.Out, "^C\x1B[J\n\n")
-				continue
-			}
 			return nil, err
 		}
 		m.LineEditor.Out.Flush()

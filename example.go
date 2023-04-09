@@ -20,7 +20,7 @@ func main() {
 	fmt.Println("Ctrl-P or UP         : Move to the previous line.")
 	fmt.Println("Ctrl-N or DOWN       : Move to the next line")
 	fmt.Println("Ctrl-J or Ctrl-Enter : Submit")
-	fmt.Println("Ctrl-C               : Cancel lines.")
+	fmt.Println("Ctrl-C               : Abort.")
 	fmt.Println("Ctrl-D with no chars : Quit.")
 	fmt.Println("Ctrl-UP   or ALT-P   : Move to the previous history entry")
 	fmt.Println("Ctrl-DOWN or ALT-N   : Move to the next history entry")
