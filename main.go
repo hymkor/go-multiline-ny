@@ -385,13 +385,11 @@ func (m *Editor) init() error {
 	return nil
 }
 
-// Deprecated: should not be used.
+// New is same as `&multiline.Editor{}`.
+// It exists only for compatibility.
+// You can use `var m multiline.Editor`.
 func New() *Editor {
-	m := &Editor{}
-	if err := m.init(); err != nil {
-		panic(err.Error())
-	}
-	return m
+	return &Editor{}
 }
 
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
@@ -431,6 +429,8 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	}
 }
 
+// Read (The function version) is same as `var m multiline.Editor ; m.Read(context)`.
+// It Exists only for compatibility.
 func Read(ctx context.Context) ([]string, error) {
 	var m Editor
 	return m.Read(ctx)
