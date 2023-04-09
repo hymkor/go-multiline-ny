@@ -1,6 +1,7 @@
 - Fix: pasting emoji caused the cursor position incorrect
 - Fix: Ctrl-Y: the cursor position was moved at the expected position
 - (Editor) Read(): Ctrl-C stops the current loop and returns readline.CtrlC
+- Fix: Coloring did not work not on the current line
 
 v0.6.2
 ======
