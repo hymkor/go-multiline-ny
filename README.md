@@ -3,7 +3,7 @@ go-multiline-ny
 
 This is the readline package supporting multi-lines that extends [go-readline-ny]
 
-The new key-bindings
+The new key-bindings. It has compatibility with Emacs.
 
 | Key | Feature
 |-----|---------
@@ -13,6 +13,7 @@ The new key-bindings
 | Ctrl-N or Down | Move the cursor to the next line
 | Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
 | Alt-N or Ctrl-Down | Fetch the next lines-set of the history
+| Ctrl-Y | Paste the string in the clipboard
 
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
 
