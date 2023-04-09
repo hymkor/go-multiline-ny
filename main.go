@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/atotto/clipboard"
 	"github.com/mattn/go-runewidth"
@@ -77,7 +76,7 @@ func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 }
 
 func mojiCount(s string) int {
-	return utf8.RuneCountInString(s)
+	return len(readline.StringToMoji(s))
 }
 
 func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
