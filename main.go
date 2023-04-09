@@ -28,7 +28,7 @@ type Editor struct {
 	Prompt func(w io.Writer, i int) (int, error)
 }
 
-func (m *Editor) updateLine(line string) {
+func (m *Editor) storeCurrentLine(line string) {
 	if m.csrline >= len(m.lines) {
 		m.lines = append(m.lines, line)
 	} else {
@@ -41,7 +41,7 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 		return readline.CONTINUE
 	}
 	m.after = func(line string) bool {
-		m.updateLine(line)
+		m.storeCurrentLine(line)
 		m.csrline--
 		fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
 		return true
@@ -56,7 +56,7 @@ func (m *Editor) submit(_ context.Context, B *readline.Buffer) readline.Result {
 	}
 	m.LineEditor.Out.Flush()
 	m.after = func(line string) bool {
-		m.updateLine(line)
+		m.storeCurrentLine(line)
 		return false
 	}
 	return readline.ENTER
@@ -68,7 +68,7 @@ func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 	}
 	fmt.Fprintln(m.LineEditor.Out)
 	m.after = func(line string) bool {
-		m.updateLine(line)
+		m.storeCurrentLine(line)
 		m.csrline++
 		return true
 	}
@@ -120,7 +120,7 @@ func (m *Editor) newLine(_ context.Context, b *readline.Buffer) readline.Result 
 
 	m.after = func(line string) bool {
 		io.WriteString(m.LineEditor.Out, "\x1B[K\n")
-		m.updateLine(line)
+		m.storeCurrentLine(line)
 		m.LineEditor.Cursor = 0
 		m.csrline++
 		lfCount := m.printAfter(m.csrline)
@@ -316,12 +316,7 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	newlines[len(newlines)-1] += tmp
 
 	m.after = func(line string) bool {
-		// update the first line
-		if m.csrline < len(m.lines) {
-			m.lines[m.csrline] = line
-		} else {
-			m.lines = append(m.lines, line)
-		}
+		m.storeCurrentLine(line)
 		fmt.Fprintln(m.LineEditor.Out)
 		m.csrline++
 
