@@ -1,3 +1,7 @@
+v0.6.3
+======
+Apr 10, 2023
+
 - Fix: pasting emoji caused the cursor position incorrect
 - Fix: Ctrl-Y: the cursor position was moved at the expected position
 - (Editor) Read(): Ctrl-C stops the current loop and returns readline.CtrlC
