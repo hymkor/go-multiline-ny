@@ -162,20 +162,6 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 
 const forbiddenWidth = 3
 
-func changeColor(c int, w io.Writer) {
-	ofs := "\x1B["
-	n := int64(0)
-	for ; c > 0; c >>= 8 {
-		_n, err := fmt.Fprintf(w, "%s%d", ofs, c&255)
-		n += int64(_n)
-		if err != nil {
-			return
-		}
-		ofs = ";"
-	}
-	w.Write([]byte{'m'})
-}
-
 func (m *Editor) printOne(i int) {
 	w, _ := m.Prompt(m.LineEditor.Out, i)
 	defaultColor := m.LineEditor.Coloring.Init()
@@ -183,7 +169,7 @@ func (m *Editor) printOne(i int) {
 	for _, c := range m.lines[i] {
 		newColor := m.LineEditor.Coloring.Next(c)
 		if newColor != color {
-			changeColor(newColor, m.LineEditor.Out)
+			newColor.WriteTo(m.LineEditor.Out)
 		}
 		color = newColor
 		if c < 0x20 {
@@ -202,7 +188,7 @@ func (m *Editor) printOne(i int) {
 		}
 	}
 	if color != defaultColor {
-		changeColor(defaultColor, m.LineEditor.Out)
+		defaultColor.WriteTo(m.LineEditor.Out)
 	}
 	io.WriteString(m.LineEditor.Out, "\x1B[K")
 }
