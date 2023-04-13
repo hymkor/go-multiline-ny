@@ -1,3 +1,5 @@
+- Fix for go-readline-ny v0.10.0
+
 v0.6.3
 ======
 Apr 10, 2023
