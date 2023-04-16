@@ -389,6 +389,8 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
 	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_ESCAPE, m.clear)
+	m.LineEditor.BindKeyClosure(readline.K_PAGEDOWN, m.nextHistory)
+	m.LineEditor.BindKeyClosure(readline.K_PAGEUP, m.prevHistory)
 	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
 
 	return nil
