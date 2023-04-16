@@ -1,3 +1,7 @@
+v0.6.6
+======
+Apr 17, 2023
+
 - Bind PAGEDOWN and PAGEUP to refer history
 - Add 4 setter methods to the type Editor
 
