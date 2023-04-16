@@ -28,6 +28,11 @@ type Editor struct {
 	Prompt func(w io.Writer, i int) (int, error)
 }
 
+func (m *Editor) SetColoring(c readline.Coloring)               { m.LineEditor.Coloring = c }
+func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
+func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.Prompt = f }
+func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
+
 func (m *Editor) storeCurrentLine(line string) {
 	if m.csrline >= len(m.lines) {
 		m.lines = append(m.lines, line)
