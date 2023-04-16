@@ -1,3 +1,5 @@
+- Bind PAGEDOWN and PAGEUP to refer history
+
 v0.6.5
 ======
 Apr 14, 2023
