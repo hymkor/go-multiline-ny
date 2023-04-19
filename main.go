@@ -13,10 +13,11 @@ import (
 )
 
 type Editor struct {
-	LineEditor readline.Editor
-	csrline    int
-	lines      []string
-	inited     bool
+	LineEditor   readline.Editor
+	csrline      int
+	lines        []string
+	inited       bool
+	enterSwapped bool
 
 	after         func(string) bool
 	origBackSpace readline.KeyFuncT
@@ -33,6 +34,7 @@ func (m *Editor) SetColoring(c readline.Coloring)               { m.LineEditor.C
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.Prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
+func (m *Editor) SwapEnter()                                    { m.enterSwapped = true }
 
 func (m *Editor) storeCurrentLine(line string) {
 	if m.csrline >= len(m.lines) {
@@ -385,9 +387,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_DOWN, m.nextHistory)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.submit)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_L, m.repaint)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_N, m.down)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_P, m.up)
 	m.LineEditor.BindKeyClosure(readline.K_CTRL_UP, m.prevHistory)
@@ -398,6 +398,13 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKeyClosure(readline.K_PAGEDOWN, m.nextHistory)
 	m.LineEditor.BindKeyClosure(readline.K_PAGEUP, m.prevHistory)
 	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
+	if m.enterSwapped {
+		m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.submit)
+		m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.newLine)
+	} else {
+		m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
+		m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.submit)
+	}
 
 	return nil
 }
