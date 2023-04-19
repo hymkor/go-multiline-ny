@@ -1,3 +1,7 @@
+v0.6.7
+======
+Apr 19, 2023
+
 - Disable Ctrl-S and Ctrl-R (one line version incremental search)
 - Add the method: `(*Editor) SwapEnter()`
 - Add the method: `(*Editor) SetHistoryCycling()`
