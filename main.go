@@ -405,7 +405,14 @@ func (m *Editor) init() error {
 		m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
 		m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.submit)
 	}
-
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_R, func(_ context.Context, b *readline.Buffer) readline.Result {
+		b.InsertAndRepaint("\x12")
+		return readline.CONTINUE
+	})
+	m.LineEditor.BindKeyClosure(readline.K_CTRL_S, func(_ context.Context, b *readline.Buffer) readline.Result {
+		b.InsertAndRepaint("\x13")
+		return readline.CONTINUE
+	})
 	return nil
 }
 
