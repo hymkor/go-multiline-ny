@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"strings"
+
+	"golang.org/x/term"
 
 	"github.com/atotto/clipboard"
 	"github.com/mattn/go-runewidth"
@@ -355,12 +358,8 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 }
 
 func (m *Editor) init() error {
-	tty1, err := readline.NewDefaultTty()
-	if err != nil {
-		return err
-	}
-	m.viewWidth, _, err = tty1.Size()
-	tty1.Close()
+	var err error
+	m.viewWidth, _, err = term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		return err
 	}
