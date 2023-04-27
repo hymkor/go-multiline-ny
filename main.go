@@ -459,10 +459,3 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 		m.LineEditor.Out.Flush()
 	}
 }
-
-// Read (The function version) is same as `var m multiline.Editor ; m.Read(context)`.
-// It Exists only for compatibility.
-func Read(ctx context.Context) ([]string, error) {
-	var m Editor
-	return m.Read(ctx)
-}
