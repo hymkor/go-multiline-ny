@@ -22,10 +22,8 @@ type Editor struct {
 	inited       bool
 	enterSwapped bool
 
-	after         func(string) bool
-	origBackSpace readline.KeyFuncT
-	origDel       readline.KeyFuncT
-	historyPtr    int
+	after      func(string) bool
+	historyPtr int
 
 	viewWidth int
 
@@ -92,7 +90,7 @@ func mojiCount(s string) int {
 
 func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
-		return m.origBackSpace.Call(ctx, b)
+		readline.CmdBackwardChar.Call(ctx, b)
 	}
 	if m.csrline == 0 {
 		return readline.CONTINUE
@@ -146,14 +144,14 @@ func (m *Editor) newLine(_ context.Context, b *readline.Buffer) readline.Result 
 func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Result {
 	if len(b.Buffer) <= 0 {
 		if len(m.lines) <= 0 {
-			return m.origDel.Call(ctx, b)
+			return readline.CmdDeleteOrAbort.Call(ctx, b)
 		}
 		if len(m.lines) == 1 && m.csrline == 0 {
-			return m.origDel.Call(ctx, b)
+			return readline.CmdDeleteOrAbort.Call(ctx, b)
 		}
 	}
 	if b.Cursor < len(b.Buffer) {
-		return m.origDel.Call(ctx, b)
+		return readline.CmdDeleteOrAbort.Call(ctx, b)
 	}
 	if m.csrline+1 < len(m.lines) {
 		b.InsertString(b.Cursor, m.lines[m.csrline+1])
@@ -365,8 +363,6 @@ func (m *Editor) init() error {
 	}
 
 	m.inited = true
-	m.origDel = m.LineEditor.GetBindKey(readline.K_CTRL_D)
-	m.origBackSpace = m.LineEditor.GetBindKey(readline.K_CTRL_H)
 	m.LineEditor.LineFeed = func(rc readline.Result) {
 		if rc != readline.ENTER {
 			fmt.Fprintln(m.LineEditor.Out)
