@@ -28,13 +28,13 @@ type Editor struct {
 
 	viewWidth int
 
-	Prompt func(w io.Writer, i int) (int, error)
+	prompt func(w io.Writer, i int) (int, error)
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
 func (m *Editor) SetColoring(c readline.Coloring)               { m.LineEditor.Coloring = c }
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
-func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.Prompt = f }
+func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
 func (m *Editor) SwapEnter()                                    { m.enterSwapped = true }
 
@@ -173,7 +173,7 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 const forbiddenWidth = 3
 
 func (m *Editor) printOne(i int) {
-	w, _ := m.Prompt(m.LineEditor.Out, i)
+	w, _ := m.prompt(m.LineEditor.Out, i)
 	defaultColor := m.LineEditor.Coloring.Init()
 	color := defaultColor
 	for _, c := range m.lines[i] {
@@ -379,13 +379,13 @@ func (m *Editor) init() error {
 			fmt.Fprintln(m.LineEditor.Out)
 		}
 	}
-	if m.Prompt == nil {
-		m.Prompt = func(w io.Writer, i int) (int, error) {
+	if m.prompt == nil {
+		m.prompt = func(w io.Writer, i int) (int, error) {
 			return fmt.Fprintf(w, "%2d ", i+1)
 		}
 	}
 	m.LineEditor.Prompt = func() (int, error) {
-		return m.Prompt(m.LineEditor.Out, m.csrline)
+		return m.prompt(m.LineEditor.Out, m.csrline)
 	}
 
 	m.LineEditor.BindKey(keys.AltN, _Cmd(m.nextHistory))
