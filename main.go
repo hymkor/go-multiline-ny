@@ -422,13 +422,6 @@ func (m *Editor) init() error {
 	return nil
 }
 
-// New is same as `&multiline.Editor{}`.
-// It exists only for compatibility.
-// You can use `var m multiline.Editor`.
-func New() *Editor {
-	return &Editor{}
-}
-
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if !m.inited {
 		if err := m.init(); err != nil {
