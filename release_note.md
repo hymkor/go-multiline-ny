@@ -1,3 +1,12 @@
+v0.6.9
+======
+Apr 28, 2023
+
+- Fix for go-readline-ny v0.11.1
+- Remove `Read()`. Use `(*Editor).Read()`
+- Remove `New()`. Use `&Editor{}`
+- Hide `(*Editor).Prompt`
+
 v0.6.8
 ======
 Apr 26, 2023
