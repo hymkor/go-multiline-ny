@@ -13,6 +13,7 @@ import (
 	"github.com/mattn/go-runewidth"
 
 	"github.com/nyaosorg/go-readline-ny"
+	"github.com/nyaosorg/go-readline-ny/keys"
 )
 
 type Editor struct {
@@ -355,6 +356,16 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
+type _Cmd func(context.Context, *readline.Buffer) readline.Result
+
+func (c _Cmd) String() string {
+	return "anonymous"
+}
+
+func (c _Cmd) Call(ctx context.Context, b *readline.Buffer) readline.Result {
+	return c(ctx, b)
+}
+
 func (m *Editor) init() error {
 	var err error
 	m.viewWidth, _, err = term.GetSize(int(os.Stdout.Fd()))
@@ -377,37 +388,37 @@ func (m *Editor) init() error {
 		return m.Prompt(m.LineEditor.Out, m.csrline)
 	}
 
-	m.LineEditor.BindKeyClosure(readline.K_ALT_N, m.nextHistory)
-	m.LineEditor.BindKeyClosure(readline.K_ALT_P, m.prevHistory)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_D, m.joinBelow)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_DOWN, m.nextHistory)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_H, m.joinAbove)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_L, m.repaint)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_N, m.down)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_P, m.up)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_UP, m.prevHistory)
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_Y, m.paste)
-	m.LineEditor.BindKeyClosure(readline.K_DELETE, m.joinBelow)
-	m.LineEditor.BindKeyClosure(readline.K_DOWN, m.down)
-	m.LineEditor.BindKeyClosure(readline.K_ESCAPE, m.clear)
-	m.LineEditor.BindKeyClosure(readline.K_PAGEDOWN, m.nextHistory)
-	m.LineEditor.BindKeyClosure(readline.K_PAGEUP, m.prevHistory)
-	m.LineEditor.BindKeyClosure(readline.K_UP, m.up)
+	m.LineEditor.BindKey(keys.AltN, _Cmd(m.nextHistory))
+	m.LineEditor.BindKey(keys.AltP, _Cmd(m.prevHistory))
+	m.LineEditor.BindKey(keys.CtrlD, _Cmd(m.joinBelow))
+	m.LineEditor.BindKey(keys.CtrlDown, _Cmd(m.nextHistory))
+	m.LineEditor.BindKey(keys.CtrlH, _Cmd(m.joinAbove))
+	m.LineEditor.BindKey(keys.CtrlL, _Cmd(m.repaint))
+	m.LineEditor.BindKey(keys.CtrlN, _Cmd(m.down))
+	m.LineEditor.BindKey(keys.CtrlP, _Cmd(m.up))
+	m.LineEditor.BindKey(keys.CtrlUp, _Cmd(m.prevHistory))
+	m.LineEditor.BindKey(keys.CtrlY, _Cmd(m.paste))
+	m.LineEditor.BindKey(keys.Delete, _Cmd(m.joinBelow))
+	m.LineEditor.BindKey(keys.Down, _Cmd(m.down))
+	m.LineEditor.BindKey(keys.Escape, _Cmd(m.clear))
+	m.LineEditor.BindKey(keys.PageDown, _Cmd(m.nextHistory))
+	m.LineEditor.BindKey(keys.PageUp, _Cmd(m.prevHistory))
+	m.LineEditor.BindKey(keys.Up, _Cmd(m.up))
 	if m.enterSwapped {
-		m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.submit)
-		m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.newLine)
+		m.LineEditor.BindKey(keys.CtrlM, _Cmd(m.submit))
+		m.LineEditor.BindKey(keys.CtrlJ, _Cmd(m.newLine))
 	} else {
-		m.LineEditor.BindKeyClosure(readline.K_CTRL_M, m.newLine)
-		m.LineEditor.BindKeyClosure(readline.K_CTRL_J, m.submit)
+		m.LineEditor.BindKey(keys.CtrlM, _Cmd(m.newLine))
+		m.LineEditor.BindKey(keys.CtrlJ, _Cmd(m.submit))
 	}
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_R, func(_ context.Context, b *readline.Buffer) readline.Result {
+	m.LineEditor.BindKey(keys.CtrlR, _Cmd(func(_ context.Context, b *readline.Buffer) readline.Result {
 		b.InsertAndRepaint("\x12")
 		return readline.CONTINUE
-	})
-	m.LineEditor.BindKeyClosure(readline.K_CTRL_S, func(_ context.Context, b *readline.Buffer) readline.Result {
+	}))
+	m.LineEditor.BindKey(keys.CtrlS, _Cmd(func(_ context.Context, b *readline.Buffer) readline.Result {
 		b.InsertAndRepaint("\x13")
 		return readline.CONTINUE
-	})
+	}))
 	return nil
 }
 
