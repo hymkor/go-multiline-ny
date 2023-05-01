@@ -89,6 +89,23 @@ func mojiCount(s string) int {
 	return len(readline.StringToMoji(s))
 }
 
+func (m *Editor) left(ctx context.Context, b *readline.Buffer) readline.Result {
+	if b.Cursor > 0 {
+		return readline.CmdBackwardChar.Call(ctx, b)
+	}
+	if m.csrline == 0 {
+		return readline.CONTINUE
+	}
+	m.after = func(line string) bool {
+		m.storeCurrentLine(line)
+		m.csrline--
+		m.LineEditor.Cursor = mojiCount(m.lines[m.csrline])
+		fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
+		return true
+	}
+	return readline.ENTER
+}
+
 func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return readline.CmdBackwardDeleteChar.Call(ctx, b)
@@ -382,6 +399,7 @@ func (m *Editor) init() error {
 
 	m.LineEditor.BindKey(keys.AltN, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.AltP, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.CtrlB, ac(m.left))
 	m.LineEditor.BindKey(keys.CtrlD, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.CtrlH, ac(m.joinAbove))
@@ -393,6 +411,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.Delete, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.Down, ac(m.down))
 	m.LineEditor.BindKey(keys.Escape, ac(m.clear))
+	m.LineEditor.BindKey(keys.Left, ac(m.left))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.Up, ac(m.up))
