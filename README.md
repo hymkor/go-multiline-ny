@@ -19,7 +19,7 @@ The new key-bindings. It has compatibility with Emacs.
 
 ![image](./demo.gif)
 
-```example.go
+```examples/example.go
 package main
 
 import (
@@ -46,17 +46,17 @@ func main() {
     fmt.Println("Ctrl-DOWN or ALT-N   : Move to the next history entry")
 
     var editor multiline.Editor
-    editor.Prompt = func(w io.Writer, lnum int) (int, error) {
+    editor.SetPrompt(func(w io.Writer, lnum int) (int, error) {
         return fmt.Fprintf(w, "[%d] ", lnum+1)
-    }
+    })
 
     // To enable escape sequence on Windows.
     // (On other operating systems, it can be ommited)
-    editor.LineEditor.Writer = colorable.NewColorableStdout()
+    editor.SetWriter(colorable.NewColorableStdout())
 
     history := simplehistory.New()
-    editor.LineEditor.History = history
-    editor.LineEditor.HistoryCycling = true
+    editor.SetHistory(history)
+    editor.SetHistoryCycling(true)
 
     for {
         lines, err := editor.Read(ctx)
