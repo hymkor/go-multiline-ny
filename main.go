@@ -356,16 +356,6 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-type _Cmd func(context.Context, *readline.Buffer) readline.Result
-
-func (c _Cmd) String() string {
-	return "anonymous"
-}
-
-func (c _Cmd) Call(ctx context.Context, b *readline.Buffer) readline.Result {
-	return c(ctx, b)
-}
-
 func (m *Editor) init() error {
 	var err error
 	m.viewWidth, _, err = term.GetSize(int(os.Stdout.Fd()))
@@ -388,37 +378,33 @@ func (m *Editor) init() error {
 		return m.prompt(m.LineEditor.Out, m.csrline)
 	}
 
-	m.LineEditor.BindKey(keys.AltN, _Cmd(m.nextHistory))
-	m.LineEditor.BindKey(keys.AltP, _Cmd(m.prevHistory))
-	m.LineEditor.BindKey(keys.CtrlD, _Cmd(m.joinBelow))
-	m.LineEditor.BindKey(keys.CtrlDown, _Cmd(m.nextHistory))
-	m.LineEditor.BindKey(keys.CtrlH, _Cmd(m.joinAbove))
-	m.LineEditor.BindKey(keys.CtrlL, _Cmd(m.repaint))
-	m.LineEditor.BindKey(keys.CtrlN, _Cmd(m.down))
-	m.LineEditor.BindKey(keys.CtrlP, _Cmd(m.up))
-	m.LineEditor.BindKey(keys.CtrlUp, _Cmd(m.prevHistory))
-	m.LineEditor.BindKey(keys.CtrlY, _Cmd(m.paste))
-	m.LineEditor.BindKey(keys.Delete, _Cmd(m.joinBelow))
-	m.LineEditor.BindKey(keys.Down, _Cmd(m.down))
-	m.LineEditor.BindKey(keys.Escape, _Cmd(m.clear))
-	m.LineEditor.BindKey(keys.PageDown, _Cmd(m.nextHistory))
-	m.LineEditor.BindKey(keys.PageUp, _Cmd(m.prevHistory))
-	m.LineEditor.BindKey(keys.Up, _Cmd(m.up))
+	type ac = readline.AnonymousCommand
+
+	m.LineEditor.BindKey(keys.AltN, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.AltP, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.CtrlD, ac(m.joinBelow))
+	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.CtrlH, ac(m.joinAbove))
+	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
+	m.LineEditor.BindKey(keys.CtrlN, ac(m.down))
+	m.LineEditor.BindKey(keys.CtrlP, ac(m.up))
+	m.LineEditor.BindKey(keys.CtrlUp, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
+	m.LineEditor.BindKey(keys.Delete, ac(m.joinBelow))
+	m.LineEditor.BindKey(keys.Down, ac(m.down))
+	m.LineEditor.BindKey(keys.Escape, ac(m.clear))
+	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.Up, ac(m.up))
 	if m.enterSwapped {
-		m.LineEditor.BindKey(keys.CtrlM, _Cmd(m.submit))
-		m.LineEditor.BindKey(keys.CtrlJ, _Cmd(m.newLine))
+		m.LineEditor.BindKey(keys.CtrlM, ac(m.submit))
+		m.LineEditor.BindKey(keys.CtrlJ, ac(m.newLine))
 	} else {
-		m.LineEditor.BindKey(keys.CtrlM, _Cmd(m.newLine))
-		m.LineEditor.BindKey(keys.CtrlJ, _Cmd(m.submit))
+		m.LineEditor.BindKey(keys.CtrlM, ac(m.newLine))
+		m.LineEditor.BindKey(keys.CtrlJ, ac(m.submit))
 	}
-	m.LineEditor.BindKey(keys.CtrlR, _Cmd(func(_ context.Context, b *readline.Buffer) readline.Result {
-		b.InsertAndRepaint("\x12")
-		return readline.CONTINUE
-	}))
-	m.LineEditor.BindKey(keys.CtrlS, _Cmd(func(_ context.Context, b *readline.Buffer) readline.Result {
-		b.InsertAndRepaint("\x13")
-		return readline.CONTINUE
-	}))
+	m.LineEditor.BindKey(keys.CtrlR, readline.SelfInserter(keys.CtrlR))
+	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 	return nil
 }
 
