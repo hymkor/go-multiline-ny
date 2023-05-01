@@ -106,6 +106,23 @@ func (m *Editor) left(ctx context.Context, b *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
+func (m *Editor) right(ctx context.Context, b *readline.Buffer) readline.Result {
+	if b.Cursor < len(b.Buffer) {
+		return readline.CmdForwardChar.Call(ctx, b)
+	}
+	if m.csrline+1 >= len(m.lines) {
+		return readline.CONTINUE
+	}
+	m.after = func(line string) bool {
+		m.storeCurrentLine(line)
+		m.csrline++
+		m.LineEditor.Cursor = 0
+		fmt.Fprint(m.LineEditor.Out, "\n")
+		return true
+	}
+	return readline.ENTER
+}
+
 func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return readline.CmdBackwardDeleteChar.Call(ctx, b)
@@ -402,6 +419,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlB, ac(m.left))
 	m.LineEditor.BindKey(keys.CtrlD, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.CtrlF, ac(m.right))
 	m.LineEditor.BindKey(keys.CtrlH, ac(m.joinAbove))
 	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
 	m.LineEditor.BindKey(keys.CtrlN, ac(m.down))
@@ -414,6 +432,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.Left, ac(m.left))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.Right, ac(m.right))
 	m.LineEditor.BindKey(keys.Up, ac(m.up))
 	if m.enterSwapped {
 		m.LineEditor.BindKey(keys.CtrlM, ac(m.submit))
