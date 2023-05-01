@@ -9,7 +9,7 @@ The new key-bindings. It has compatibility with Emacs.
 |-----|---------
 | Ctrl-M or Enter | Insert a new line
 | Ctrl-J or Ctrl-Enter | Submit all lines
-| Ctrl-P or Up | Move the cursor to the next line
+| Ctrl-P or Up | Move the cursor to the previous line
 | Ctrl-N or Down | Move the cursor to the next line
 | Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
 | Alt-N or Ctrl-Down | Fetch the next lines-set of the history
