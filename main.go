@@ -91,7 +91,7 @@ func mojiCount(s string) int {
 
 func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
-		readline.CmdBackwardChar.Call(ctx, b)
+		return readline.CmdBackwardDeleteChar.Call(ctx, b)
 	}
 	if m.csrline == 0 {
 		return readline.CONTINUE
