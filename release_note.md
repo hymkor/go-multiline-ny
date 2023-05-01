@@ -1,3 +1,7 @@
+v0.7.0
+=======
+May 1, 2023
+
 - Fix: Backspace did not work to delete backward character since v0.6.9
 - Update for go-readline-ny v0.11.2
 - Ctrl-B can move cursor to the end of the previous line
