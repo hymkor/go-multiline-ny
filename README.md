@@ -1,6 +1,8 @@
 go-multiline-ny
 ===============
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/hymkor/go-multiline-ny.svg)](https://pkg.go.dev/github.com/hymkor/go-multiline-ny)
+
 This is the readline package supporting multi-lines that extends [go-readline-ny]
 
 The new key-bindings. It has compatibility with Emacs.
