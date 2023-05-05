@@ -408,8 +408,8 @@ func (m *Editor) init() error {
 			return fmt.Fprintf(w, "%2d ", i+1)
 		}
 	}
-	m.LineEditor.Prompt = func() (int, error) {
-		return m.prompt(m.LineEditor.Out, m.csrline)
+	m.LineEditor.PromptWriter = func(w io.Writer) (int, error) {
+		return m.prompt(w, m.csrline)
 	}
 
 	type ac = readline.AnonymousCommand
