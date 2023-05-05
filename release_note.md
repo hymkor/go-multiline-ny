@@ -1,3 +1,7 @@
+v0.7.1
+======
+May 2, 2023
+
 - Use `PromptWriter` on [go-readline-ny v0.11.3]
 
 [go-readline-ny v0.11.3]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.11.3
