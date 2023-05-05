@@ -1,26 +1,36 @@
+- Use `PromptWriter` on [go-readline-ny v0.11.3]
+
+[go-readline-ny v0.11.3]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.11.3
+
 v0.7.0
 =======
 May 1, 2023
 
 - Fix: Backspace did not work to delete backward character since v0.6.9
-- Update for go-readline-ny v0.11.2
+- Update for [go-readline-ny v0.11.2]
 - Ctrl-B can move cursor to the end of the previous line
 - Ctrl-F can move cursor to the beginning of the next line
+
+[go-readline-ny v0.11.2]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.11.2
 
 v0.6.9
 ======
 Apr 28, 2023
 
-- Fix for go-readline-ny v0.11.1
+- Fix for [go-readline-ny v0.11.1]
 - Remove `Read()`. Use `(*Editor).Read()`
 - Remove `New()`. Use `&Editor{}`
 - Hide `(*Editor).Prompt`
+
+[go-readline-ny v0.11.1]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.11.1
 
 v0.6.8
 ======
 Apr 26, 2023
 
-- Fix for go-readline-ny v0.11.0
+- Fix for [go-readline-ny v0.11.0]
+
+[go-readline-ny v0.11.0]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.11.0
 
 v0.6.7
 ======
@@ -41,13 +51,17 @@ v0.6.5
 ======
 Apr 14, 2023
 
-- Fix for go-readline-ny v0.10.1
+- Fix for [go-readline-ny v0.10.1]
+
+[go-readline-ny v0.10.1]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.10.1
 
 v0.6.4
 ======
 Apr 13, 2023
 
-- Fix for go-readline-ny v0.10.0
+- Fix for [go-readline-ny v0.10.0]
+
+[go-readline-ny v0.10.0]: https://github.com/nyaosorg/go-readline-ny/releases/tag/v0.10.0
 
 v0.6.3
 ======
@@ -116,4 +130,4 @@ v0.1.0
 ======
 May 25, 2023
 
-The first version.
++ The first version.
