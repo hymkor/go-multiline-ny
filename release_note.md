@@ -1,3 +1,9 @@
+v0.7.2
+======
+May 6, 2023
+
+- Update go-tty to v0.0.5 for https://github.com/hymkor/go-multiline-ny/issues/1
+
 v0.7.1
 ======
 May 2, 2023
