@@ -17,7 +17,7 @@ func main() {
 	fmt.Println("Ctrl-M or Enter      : Insert a linefeed")
 	fmt.Println("Ctrl-P or UP         : Move to the previous line.")
 	fmt.Println("Ctrl-N or DOWN       : Move to the next line")
-	fmt.Println("Ctrl-J or Ctrl-Enter : Submit")
+	fmt.Println("Ctrl-J               : Submit")
 	fmt.Println("Ctrl-C               : Abort.")
 	fmt.Println("Ctrl-D with no chars : Quit.")
 	fmt.Println("Ctrl-UP   or ALT-P   : Move to the previous history entry")

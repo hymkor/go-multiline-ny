@@ -10,7 +10,7 @@ The new key-bindings. It has compatibility with Emacs.
 | Key | Feature
 |-----|---------
 | Ctrl-M or Enter | Insert a new line
-| Ctrl-J or Ctrl-Enter | Submit all lines
+| Ctrl-J(or Ctrl-Enter[^X]) | Submit all lines
 | Ctrl-P or Up | Move the cursor to the previous line
 | Ctrl-N or Down | Move the cursor to the next line
 | Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
@@ -18,6 +18,7 @@ The new key-bindings. It has compatibility with Emacs.
 | Ctrl-Y | Paste the string in the clipboard
 
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
+[^X]: Only WindowsTerminal or Teraterm
 
 ![image](./demo.gif)
 
@@ -41,7 +42,7 @@ func main() {
     fmt.Println("Ctrl-M or Enter      : Insert a linefeed")
     fmt.Println("Ctrl-P or UP         : Move to the previous line.")
     fmt.Println("Ctrl-N or DOWN       : Move to the next line")
-    fmt.Println("Ctrl-J or Ctrl-Enter : Submit")
+    fmt.Println("Ctrl-J               : Submit")
     fmt.Println("Ctrl-C               : Abort.")
     fmt.Println("Ctrl-D with no chars : Quit.")
     fmt.Println("Ctrl-UP   or ALT-P   : Move to the previous history entry")
