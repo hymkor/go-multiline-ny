@@ -17,18 +17,13 @@ import (
 )
 
 type Editor struct {
-	LineEditor   readline.Editor
-	csrline      int
-	lines        []string
-	inited       bool
-	enterSwapped bool
-
+	LineEditor readline.Editor
+	csrline    int
+	lines      []string
 	after      func(string) bool
 	historyPtr int
-
-	viewWidth int
-
-	prompt func(w io.Writer, i int) (int, error)
+	viewWidth  int // when viewWidth==0, it means the instance is not initialized, yet
+	prompt     func(w io.Writer, i int) (int, error)
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -36,7 +31,12 @@ func (m *Editor) SetColoring(c readline.Coloring)               { m.LineEditor.C
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
-func (m *Editor) SwapEnter()                                    { m.enterSwapped = true }
+
+func (m *Editor) SwapEnter() error {
+	m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.submit))
+	m.BindKey(keys.CtrlJ, readline.AnonymousCommand(m.newLine))
+	return nil
+}
 
 func (m *Editor) storeCurrentLine(line string) {
 	if m.csrline >= len(m.lines) {
@@ -387,13 +387,14 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 }
 
 func (m *Editor) init() error {
+	if m.viewWidth > 0 {
+		return nil
+	}
 	var err error
 	m.viewWidth, _, err = term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		return err
 	}
-
-	m.inited = true
 	m.LineEditor.LineFeed = func(rc readline.Result) {
 		if rc != readline.ENTER {
 			fmt.Fprintln(m.LineEditor.Out)
@@ -430,23 +431,24 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.Right, ac(m.right))
 	m.LineEditor.BindKey(keys.Up, ac(m.up))
-	if m.enterSwapped {
-		m.LineEditor.BindKey(keys.CtrlM, ac(m.submit))
-		m.LineEditor.BindKey(keys.CtrlJ, ac(m.newLine))
-	} else {
-		m.LineEditor.BindKey(keys.CtrlM, ac(m.newLine))
-		m.LineEditor.BindKey(keys.CtrlJ, ac(m.submit))
-	}
+	m.LineEditor.BindKey(keys.CtrlM, ac(m.newLine))
+	m.LineEditor.BindKey(keys.CtrlJ, ac(m.submit))
 	m.LineEditor.BindKey(keys.CtrlR, readline.SelfInserter(keys.CtrlR))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 	return nil
 }
 
+func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
+	if err := m.init(); err != nil {
+		return err
+	}
+	m.LineEditor.BindKey(key, f)
+	return nil
+}
+
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
-	if !m.inited {
-		if err := m.init(); err != nil {
-			return nil, err
-		}
+	if err := m.init(); err != nil {
+		return nil, err
 	}
 	m.csrline = 0
 	m.lines = []string{}
