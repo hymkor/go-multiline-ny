@@ -32,6 +32,7 @@ func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.H
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
 
+// Deprecated:
 func (m *Editor) SwapEnter() error {
 	m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.Submit))
 	m.BindKey(keys.CtrlJ, readline.AnonymousCommand(m.NewLine))
