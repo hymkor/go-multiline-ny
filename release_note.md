@@ -1,3 +1,8 @@
+- Implement method `BindKey`
+- Rename and exposed internal method `submit` and `newline` as `Submit` and `NewLine`
+- Deprecate `SwapEnter`
+- Add example: `examples/example-swap.go`
+
 v0.7.2
 ======
 May 6, 2023
