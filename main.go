@@ -33,8 +33,8 @@ func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
 
 func (m *Editor) SwapEnter() error {
-	m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.submit))
-	m.BindKey(keys.CtrlJ, readline.AnonymousCommand(m.newLine))
+	m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.Submit))
+	m.BindKey(keys.CtrlJ, readline.AnonymousCommand(m.NewLine))
 	return nil
 }
 
@@ -59,7 +59,7 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-func (m *Editor) submit(_ context.Context, B *readline.Buffer) readline.Result {
+func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 	fmt.Fprintln(m.LineEditor.Out)
 	for i := m.csrline + 1; i < len(m.lines); i++ {
 		fmt.Fprintln(m.LineEditor.Out)
@@ -144,7 +144,7 @@ func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Res
 	return readline.ENTER
 }
 
-func (m *Editor) newLine(_ context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result {
 	// make new line at the next of the cursor
 	if m.csrline >= len(m.lines) {
 		m.lines = append(m.lines, "")
@@ -431,8 +431,8 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.Right, ac(m.right))
 	m.LineEditor.BindKey(keys.Up, ac(m.up))
-	m.LineEditor.BindKey(keys.CtrlM, ac(m.newLine))
-	m.LineEditor.BindKey(keys.CtrlJ, ac(m.submit))
+	m.LineEditor.BindKey(keys.CtrlM, ac(m.NewLine))
+	m.LineEditor.BindKey(keys.CtrlJ, ac(m.Submit))
 	m.LineEditor.BindKey(keys.CtrlR, readline.SelfInserter(keys.CtrlR))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 	return nil
