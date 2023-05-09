@@ -1,3 +1,7 @@
+v0.8.0
+======
+May 9, 2023
+
 - Implement method `BindKey`
 - Rename and exposed internal method `submit` and `newline` as `Submit` and `NewLine`
 - Deprecate `SwapEnter`
