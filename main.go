@@ -436,6 +436,8 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlJ, ac(m.Submit))
 	m.LineEditor.BindKey(keys.CtrlR, readline.SelfInserter(keys.CtrlR))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
+
+	m.LineEditor.Init()
 	return nil
 }
 
@@ -447,16 +449,25 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 	return nil
 }
 
-func (m *Editor) Read(ctx context.Context) ([]string, error) {
+func (m *Editor) Read(ctx context.Context, defaults ...string) ([]string, error) {
 	if err := m.init(); err != nil {
 		return nil, err
 	}
-	m.csrline = 0
-	m.lines = []string{}
+	if len(defaults) <= 0 {
+		m.lines = []string{}
+		m.csrline = 0
+	} else {
+		m.lines = defaults
+		m.csrline = len(m.lines) - 1
+		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
+	}
 	if m.LineEditor.History != nil {
 		m.historyPtr = m.LineEditor.History.Len()
 	}
-
+	for i := 0; i < m.csrline; i++ {
+		m.printOne(i)
+		fmt.Fprintln(m.LineEditor.Out)
+	}
 	for {
 		if m.csrline < len(m.lines) {
 			m.LineEditor.Default = m.lines[m.csrline]
