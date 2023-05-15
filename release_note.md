@@ -1,3 +1,7 @@
+- `(*Editor) Read` can be given default text now (See [example-default.go])
+
+[example-default.go]: ./examples/example-default.go
+
 v0.8.0
 ======
 May 9, 2023
