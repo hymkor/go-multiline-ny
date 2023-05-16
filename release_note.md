@@ -1,4 +1,4 @@
-- `(*Editor) Read` can be given default text now (See [example-default.go])
+- Implemented methods `(*Editor) SetDefault` and `(*Editor) SetMoveEnd` to specify initial text and cursor position. (See [example-default.go])
 
 [example-default.go]: ./examples/example-default.go
 
