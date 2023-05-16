@@ -24,6 +24,8 @@ type Editor struct {
 	historyPtr int
 	viewWidth  int // when viewWidth==0, it means the instance is not initialized, yet
 	prompt     func(w io.Writer, i int) (int, error)
+	defaults   []string
+	moveEnd    bool
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -31,6 +33,8 @@ func (m *Editor) SetColoring(c readline.Coloring)               { m.LineEditor.C
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
+func (m *Editor) SetDefault(d []string)                         { m.defaults = d }
+func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = value }
 
 // Deprecated:
 func (m *Editor) SwapEnter() error {
@@ -449,24 +453,29 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 	return nil
 }
 
-func (m *Editor) Read(ctx context.Context, defaults ...string) ([]string, error) {
+func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if err := m.init(); err != nil {
 		return nil, err
 	}
-	if len(defaults) <= 0 {
-		m.lines = []string{}
-		m.csrline = 0
-	} else {
-		m.lines = defaults
-		m.csrline = len(m.lines) - 1
-		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
+
+	m.lines = []string{}
+	m.csrline = 0
+	m.LineEditor.Cursor = 0
+	if m.defaults != nil && len(m.defaults) > 0 {
+		m.lines = append(m.lines, m.defaults...)
+		lfCount := m.printAfter(0)
+		m.LineEditor.Out.WriteByte('\r')
+		if m.moveEnd {
+			m.csrline = len(m.lines) - 1
+			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
+		} else {
+			if lfCount > 1 {
+				fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
+			}
+		}
 	}
 	if m.LineEditor.History != nil {
 		m.historyPtr = m.LineEditor.History.Len()
-	}
-	for i := 0; i < m.csrline; i++ {
-		m.printOne(i)
-		fmt.Fprintln(m.LineEditor.Out)
 	}
 	for {
 		if m.csrline < len(m.lines) {

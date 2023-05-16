@@ -12,25 +12,39 @@ import (
 	"github.com/mattn/go-colorable"
 )
 
-func main() {
+func try(ctx context.Context,ed *multiline.Editor) error {
+	lines, err := ed.Read(ctx)
+	if err != nil {
+		return err
+	}
+	fmt.Println("-----")
+	fmt.Println(strings.Join(lines, "\n"))
+	fmt.Println("-----")
+	return nil
+}
+
+func mains() error {
+	ctx := context.Background()
 	var ed multiline.Editor
 
 	ed.SetWriter(colorable.NewColorableStdout())
+	ed.SetDefault([]string{ "Default1","Default2","Default3"})
 
-	ctx := context.Background()
-	lines := []string{ "Default1","Default2","Default3"}
-	for{
-		var err error
-		lines, err = ed.Read(ctx,lines...)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
-			return
-		}
-		L := strings.Join(lines, "\n")
-		fmt.Println("-----")
-		fmt.Println(L)
-		fmt.Println("-----")
+	fmt.Println("When .moveEnd=false")
+	ed.SetMoveEnd(false)
+	if err := try(ctx,&ed) ; err != nil {
+		return err
+	}
 
+	fmt.Println("When .moveEnd=true")
+	ed.SetMoveEnd(true)
+	return try(ctx,&ed)
+}
+
+func main(){
+	if err := mains() ; err != nil {
+		fmt.Fprintln(os.Stderr,err.Error())
+		os.Exit(1)
 	}
 }
 
