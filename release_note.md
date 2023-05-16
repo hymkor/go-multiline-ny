@@ -1,3 +1,7 @@
+v0.9.0
+======
+May 16, 2023
+
 - Implemented methods `(*Editor) SetDefault` and `(*Editor) SetMoveEnd` to specify initial text and cursor position. (See [example-default.go])
 
 [example-default.go]: ./examples/example-default.go
