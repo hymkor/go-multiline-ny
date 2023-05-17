@@ -12,7 +12,7 @@ import (
 	"github.com/mattn/go-colorable"
 )
 
-func try(ctx context.Context,ed *multiline.Editor) error {
+func try(ctx context.Context, ed *multiline.Editor) error {
 	lines, err := ed.Read(ctx)
 	if err != nil {
 		return err
@@ -28,23 +28,22 @@ func mains() error {
 	var ed multiline.Editor
 
 	ed.SetWriter(colorable.NewColorableStdout())
-	ed.SetDefault([]string{ "Default1","Default2","Default3"})
+	ed.SetDefault([]string{"Default1", "Default2", "Default3"})
 
 	fmt.Println("When .moveEnd=false")
 	ed.SetMoveEnd(false)
-	if err := try(ctx,&ed) ; err != nil {
+	if err := try(ctx, &ed); err != nil {
 		return err
 	}
 
 	fmt.Println("When .moveEnd=true")
 	ed.SetMoveEnd(true)
-	return try(ctx,&ed)
+	return try(ctx, &ed)
 }
 
-func main(){
-	if err := mains() ; err != nil {
-		fmt.Fprintln(os.Stderr,err.Error())
+func main() {
+	if err := mains(); err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
-
