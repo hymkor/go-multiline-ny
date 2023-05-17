@@ -469,7 +469,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			m.csrline = len(m.lines) - 1
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 		} else {
-			if lfCount > 1 {
+			if lfCount > 0 {
 				fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
 			}
 		}
