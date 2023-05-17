@@ -1,3 +1,5 @@
+- Fix: If `SetDefault` was called with only one line and `SetMoveEnd` was called with false or not called, the line was printed twice.
+
 v0.9.0
 ======
 May 16, 2023
