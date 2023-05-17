@@ -23,6 +23,8 @@ type Editor struct {
 	after      func(string) bool
 	historyPtr int
 	viewWidth  int // when viewWidth==0, it means the instance is not initialized, yet
+	viewHeight int
+	headline   int // the first line on the screen
 	prompt     func(w io.Writer, i int) (int, error)
 	defaults   []string
 	moveEnd    bool
@@ -51,6 +53,14 @@ func (m *Editor) storeCurrentLine(line string) {
 	}
 }
 
+func (m *Editor) moveUp(n int) {
+	if n == 1 {
+		io.WriteString(m.LineEditor.Out, "\r\x1B[A")
+	} else if n > 0 {
+		fmt.Fprintf(m.LineEditor.Out, "\r\x1B[%dA", n)
+	}
+}
+
 func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	if m.csrline <= 0 {
 		return readline.CONTINUE
@@ -58,7 +68,12 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	m.after = func(line string) bool {
 		m.storeCurrentLine(line)
 		m.csrline--
-		fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
+		m.LineEditor.Out.WriteByte('\r')
+		if m.fixView() < 0 {
+			m.moveUp(m.printAfter(m.csrline))
+		} else {
+			fmt.Fprint(m.LineEditor.Out, "\x1B[A")
+		}
 		return true
 	}
 	return readline.ENTER
@@ -66,7 +81,8 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 
 func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 	fmt.Fprintln(m.LineEditor.Out)
-	for i := m.csrline + 1; i < len(m.lines); i++ {
+	end := min(len(m.lines), m.headline+m.viewHeight)
+	for i := m.csrline + 1; i < end; i++ {
 		fmt.Fprintln(m.LineEditor.Out)
 	}
 	m.LineEditor.Out.Flush()
@@ -81,10 +97,15 @@ func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 	if m.csrline >= len(m.lines)-1 {
 		return readline.CONTINUE
 	}
-	fmt.Fprintln(m.LineEditor.Out)
 	m.after = func(line string) bool {
 		m.storeCurrentLine(line)
 		m.csrline++
+		if m.fixView() > 0 {
+			m.moveUp(m.csrline - m.headline)
+			m.printAfter(m.headline)
+		} else {
+			fmt.Fprintln(m.LineEditor.Out)
+		}
 		return true
 	}
 	return readline.ENTER
@@ -100,8 +121,12 @@ func (m *Editor) left(ctx context.Context, b *readline.Buffer) readline.Result {
 	m.after = func(line string) bool {
 		m.storeCurrentLine(line)
 		m.csrline--
+		if m.fixView() < 0 {
+			m.moveUp(m.printAfter(m.csrline))
+		} else {
+			fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
+		}
 		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
-		fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
 		return true
 	}
 	return readline.ENTER
@@ -118,7 +143,12 @@ func (m *Editor) right(ctx context.Context, b *readline.Buffer) readline.Result 
 		m.storeCurrentLine(line)
 		m.csrline++
 		m.LineEditor.Cursor = 0
-		fmt.Fprint(m.LineEditor.Out, "\n")
+		if m.fixView() > 0 {
+			m.moveUp(m.csrline-m.headline)
+			m.printAfter(m.headline)
+		} else {
+			fmt.Fprint(m.LineEditor.Out, "\n")
+		}
 		return true
 	}
 	return readline.ENTER
@@ -134,6 +164,7 @@ func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Res
 	m.after = func(line string) bool {
 		if m.csrline > 0 {
 			m.csrline--
+			m.fixView()
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 			m.lines[m.csrline] = m.lines[m.csrline] + line
 			if m.csrline+1 < len(m.lines) {
@@ -168,10 +199,8 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 		m.storeCurrentLine(line)
 		m.LineEditor.Cursor = 0
 		m.csrline++
-		lfCount := m.printAfter(m.csrline)
-		if lfCount > 0 {
-			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
-		}
+		m.fixView()
+		m.moveUp(m.printAfter(m.csrline))
 		return true
 	}
 	return readline.ENTER
@@ -238,54 +267,68 @@ func (m *Editor) printOne(i int) {
 	io.WriteString(m.LineEditor.Out, "\x1B[K")
 }
 
+// printAfter prints lines[i:j].
+// `headline` must be corrected.
+// It does not fix view.
 func (m *Editor) printFromTo(i, j int) int {
 	lfCount := 0
+	if j > m.headline+m.viewHeight {
+		j = m.headline + m.viewHeight
+	}
 	if i < j {
+		m.LineEditor.Out.WriteByte('\r')
 		for {
 			m.printOne(i)
 			i++
 			if i >= j {
 				break
 			}
-			fmt.Fprintln(m.LineEditor.Out)
+			m.LineEditor.Out.WriteByte('\n')
 			lfCount++
 		}
 	}
 	return lfCount
 }
 
+// printAfter prints lines[i:].
+// `headline` must be corrected.
+// It does not fix view.
 func (m *Editor) printAfter(i int) int {
 	lfCount := m.printFromTo(i, len(m.lines))
-	io.WriteString(m.LineEditor.Out, "\x1B[J")
+	io.WriteString(m.LineEditor.Out, "\x1B[J\r")
 	m.LineEditor.Out.Flush()
 	return lfCount
 }
 
 func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result {
 	io.WriteString(m.LineEditor.Out, "\x1B[1;1H\x1B[2J")
-	m.printAfter(0)
-	if m.csrline < len(m.lines)-1 {
-		fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", len(m.lines)-1-m.csrline)
-	}
+	lfCount := m.printAfter(m.headline)
+	lfCount -= (m.csrline - m.headline)
+	m.moveUp(lfCount)
 	b.RepaintAll()
 	return readline.CONTINUE
 }
 
+func (m *Editor) fixView() int {
+	if m.csrline >= m.headline+m.viewHeight {
+		m.headline = m.csrline - m.viewHeight + 1
+		return +1
+	} else if m.csrline < m.headline {
+		m.headline = m.csrline
+		return -1
+	}
+	return 0
+}
+
 func (m *Editor) printCurrentHistoryRecord(string) bool {
 	// clear
-	if m.csrline > 0 {
-		fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", m.csrline)
-	}
-	io.WriteString(m.LineEditor.Out, "\r")
-
+	m.moveUp(m.csrline - m.headline)
 	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
-	m.csrline = 0
-	for m.csrline < len(m.lines)-1 {
-		m.printOne(m.csrline)
-		fmt.Fprintln(m.LineEditor.Out)
-		m.csrline++
-	}
-	fmt.Fprint(m.LineEditor.Out, "\x1B[J")
+	m.csrline = len(m.lines) - 1
+	m.fixView()
+	lfCount := m.printAfter(m.headline)
+	lfCount -= (m.csrline - m.headline)
+	m.moveUp(lfCount)
 	m.LineEditor.Cursor = 9999
 	return true
 }
@@ -322,12 +365,11 @@ func (m *Editor) nextHistory(_ context.Context, b *readline.Buffer) readline.Res
 
 func (m *Editor) clear(_ context.Context, b *readline.Buffer) readline.Result {
 	m.after = func(string) bool {
-		if m.csrline > 0 {
-			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", m.csrline)
-		}
+		m.moveUp(m.csrline - m.headline)
 		io.WriteString(m.LineEditor.Out, "\r\x1B[J")
 		m.csrline = 0
 		m.lines = m.lines[:0]
+		m.fixView()
 		return true
 	}
 	return readline.ENTER
@@ -340,6 +382,13 @@ func insertSliceAt(slice []string, pos int, newlines []string) []string {
 	slice = append(slice, newlines...)
 	slice = append(slice, backup...)
 	return slice
+}
+
+func min(i, j int) int {
+	if i < j {
+		return i
+	}
+	return j
 }
 
 func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
@@ -374,17 +423,14 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 		m.storeCurrentLine(line)
 		fmt.Fprintln(m.LineEditor.Out)
 		m.csrline++
+		m.fixView()
 
 		m.lines = insertSliceAt(m.lines, m.csrline, newlines)
-
-		m.printFromTo(m.csrline, m.csrline+len(newlines))
-		if m.csrline+len(newlines) < len(m.lines) {
-			fmt.Fprintln(m.LineEditor.Out)
-			lfCount := 1 + m.printAfter(m.csrline+len(newlines))
-			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
-		}
-		m.LineEditor.Out.Flush()
+		start := m.csrline
 		m.csrline += len(newlines) - 1
+		m.fixView()
+		m.printAfter(start)
+		m.moveUp(min(len(m.lines), m.headline+m.viewHeight) - m.csrline - 1)
 		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline]) - nextCursorPosition
 		return true
 	}
@@ -396,7 +442,7 @@ func (m *Editor) init() error {
 		return nil
 	}
 	var err error
-	m.viewWidth, _, err = term.GetSize(int(os.Stdout.Fd()))
+	m.viewWidth, m.viewHeight, err = term.GetSize(int(os.Stdout.Fd()))
 	if err != nil {
 		return err
 	}
@@ -460,18 +506,18 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 
 	m.lines = []string{}
 	m.csrline = 0
+	m.fixView()
 	m.LineEditor.Cursor = 0
 	if m.defaults != nil && len(m.defaults) > 0 {
 		m.lines = append(m.lines, m.defaults...)
-		lfCount := m.printAfter(0)
-		m.LineEditor.Out.WriteByte('\r')
 		if m.moveEnd {
 			m.csrline = len(m.lines) - 1
+			m.fixView()
+			m.printAfter(m.headline)
+			m.LineEditor.Out.WriteByte('\r')
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 		} else {
-			if lfCount > 0 {
-				fmt.Fprintf(m.LineEditor.Out, "\x1B[%dA", lfCount)
-			}
+			m.moveUp(m.printAfter(0))
 		}
 	}
 	if m.LineEditor.History != nil {
@@ -486,6 +532,9 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 		m.after = func(string) bool { return true }
 		line, err := m.LineEditor.ReadLine(ctx)
 		if err != nil {
+			m.printAfter(m.csrline)
+			m.LineEditor.Out.WriteByte('\n')
+			m.LineEditor.Out.Flush()
 			return nil, err
 		}
 		m.LineEditor.Out.Flush()
