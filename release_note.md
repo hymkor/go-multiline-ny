@@ -1,3 +1,5 @@
+- More lines than the terminal's maximum ones are editable now without disturbing the screen
+
 v0.9.1
 ======
 May 17, 2023
