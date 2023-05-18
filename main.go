@@ -144,7 +144,7 @@ func (m *Editor) right(ctx context.Context, b *readline.Buffer) readline.Result 
 		m.csrline++
 		m.LineEditor.Cursor = 0
 		if m.fixView() > 0 {
-			m.moveUp(m.csrline-m.headline)
+			m.moveUp(m.csrline - m.headline)
 			m.printAfter(m.headline)
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\n")
@@ -237,7 +237,8 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 const forbiddenWidth = 3
 
 func (m *Editor) printOne(i int) {
-	w, _ := m.prompt(m.LineEditor.Out, i)
+	w0, _ := m.prompt(m.LineEditor.Out, i)
+	w := w0
 	defaultColor := m.LineEditor.Coloring.Init()
 	color := defaultColor
 	for _, c := range m.lines[i] {
@@ -246,7 +247,14 @@ func (m *Editor) printOne(i int) {
 			newColor.WriteTo(m.LineEditor.Out)
 		}
 		color = newColor
-		if c < 0x20 {
+		if c == '\t' {
+			size := 4 - (w-w0)%4
+			if w+size >= m.viewWidth-forbiddenWidth {
+				break
+			}
+			io.WriteString(m.LineEditor.Out, "    "[:size])
+			w += size
+		} else if c < 0x20 {
 			if w+2 >= m.viewWidth-forbiddenWidth {
 				break
 			}
