@@ -236,8 +236,36 @@ func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Res
 
 const forbiddenWidth = 3
 
+func cutEscapeSequenceAndOldLine(s string) string {
+	var buffer strings.Builder
+	esc := false
+	for i, end := 0, len(s); i < end; i++ {
+		r := s[i]
+		switch r {
+		case '\r', '\n':
+			buffer.Reset()
+		case '\x1B':
+			esc = true
+		default:
+			if esc {
+				if ('A' <= r && r <= 'Z') || ('a' <= r && r <= 'z') {
+					esc = false
+				}
+			} else {
+				buffer.WriteByte(r)
+			}
+		}
+	}
+	return buffer.String()
+}
+
 func (m *Editor) printOne(i int) {
-	w0, _ := m.prompt(m.LineEditor.Out, i)
+	var buffer strings.Builder
+	m.prompt(&buffer, i)
+	promptStr := buffer.String()
+
+	io.WriteString(m.LineEditor.Out, promptStr)
+	w0 := int(readline.GetStringWidth(cutEscapeSequenceAndOldLine(promptStr)))
 	w := w0
 	defaultColor := m.LineEditor.Coloring.Init()
 	color := defaultColor
