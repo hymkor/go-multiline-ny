@@ -1,3 +1,6 @@
+- Tab characters can now be represented by a few spaces up to every fourth position instead of ^I
+- Fix: the width of the line header had not been counted incorrect
+
 v0.10.0
 =======
 May 18, 2023
