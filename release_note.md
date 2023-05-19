@@ -1,3 +1,7 @@
+v0.11.0
+=======
+May 19, 2023
+
 - Tab characters can now be represented by a few spaces up to every fourth position instead of ^I
 - Fix: the width of the line header had not been counted incorrect
 
