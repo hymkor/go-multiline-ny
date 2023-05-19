@@ -6,7 +6,7 @@ require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-runewidth v0.0.14
-	github.com/nyaosorg/go-readline-ny v0.12.3
+	github.com/nyaosorg/go-readline-ny v0.13.0
 	golang.org/x/term v0.8.0
 )
 
