@@ -53,7 +53,7 @@ func (m *Editor) storeCurrentLine(line string) {
 	}
 }
 
-func (m *Editor) moveUp(n int) {
+func (m *Editor) escA(n int) {
 	if n == 1 {
 		io.WriteString(m.LineEditor.Out, "\r\x1B[A")
 	} else if n > 0 {
@@ -70,7 +70,7 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 		m.csrline--
 		m.LineEditor.Out.WriteByte('\r')
 		if m.fixView() < 0 {
-			m.moveUp(m.printAfter(m.csrline))
+			m.escA(m.printAfter(m.csrline))
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\x1B[A")
 		}
@@ -101,7 +101,7 @@ func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
 		m.storeCurrentLine(line)
 		m.csrline++
 		if m.fixView() > 0 {
-			m.moveUp(m.csrline - m.headline)
+			m.escA(m.csrline - m.headline)
 			m.printAfter(m.headline)
 		} else {
 			fmt.Fprintln(m.LineEditor.Out)
@@ -122,7 +122,7 @@ func (m *Editor) left(ctx context.Context, b *readline.Buffer) readline.Result {
 		m.storeCurrentLine(line)
 		m.csrline--
 		if m.fixView() < 0 {
-			m.moveUp(m.printAfter(m.csrline))
+			m.escA(m.printAfter(m.csrline))
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\r\x1B[A")
 		}
@@ -144,7 +144,7 @@ func (m *Editor) right(ctx context.Context, b *readline.Buffer) readline.Result 
 		m.csrline++
 		m.LineEditor.Cursor = 0
 		if m.fixView() > 0 {
-			m.moveUp(m.csrline - m.headline)
+			m.escA(m.csrline - m.headline)
 			m.printAfter(m.headline)
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\n")
@@ -200,7 +200,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 		m.LineEditor.Cursor = 0
 		m.csrline++
 		m.fixView()
-		m.moveUp(m.printAfter(m.csrline))
+		m.escA(m.printAfter(m.csrline))
 		return true
 	}
 	return readline.ENTER
@@ -340,7 +340,7 @@ func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result 
 	io.WriteString(m.LineEditor.Out, "\x1B[1;1H\x1B[2J")
 	lfCount := m.printAfter(m.headline)
 	lfCount -= (m.csrline - m.headline)
-	m.moveUp(lfCount)
+	m.escA(lfCount)
 	b.RepaintAll()
 	return readline.CONTINUE
 }
@@ -358,13 +358,13 @@ func (m *Editor) fixView() int {
 
 func (m *Editor) printCurrentHistoryRecord(string) bool {
 	// clear
-	m.moveUp(m.csrline - m.headline)
+	m.escA(m.csrline - m.headline)
 	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
 	m.csrline = len(m.lines) - 1
 	m.fixView()
 	lfCount := m.printAfter(m.headline)
 	lfCount -= (m.csrline - m.headline)
-	m.moveUp(lfCount)
+	m.escA(lfCount)
 	m.LineEditor.Cursor = 9999
 	return true
 }
@@ -401,7 +401,7 @@ func (m *Editor) nextHistory(_ context.Context, b *readline.Buffer) readline.Res
 
 func (m *Editor) clear(_ context.Context, b *readline.Buffer) readline.Result {
 	m.after = func(string) bool {
-		m.moveUp(m.csrline - m.headline)
+		m.escA(m.csrline - m.headline)
 		io.WriteString(m.LineEditor.Out, "\r\x1B[J")
 		m.csrline = 0
 		m.lines = m.lines[:0]
@@ -466,7 +466,7 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 		m.csrline += len(newlines) - 1
 		m.fixView()
 		m.printAfter(start)
-		m.moveUp(min(len(m.lines), m.headline+m.viewHeight) - m.csrline - 1)
+		m.escA(min(len(m.lines), m.headline+m.viewHeight) - m.csrline - 1)
 		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline]) - nextCursorPosition
 		return true
 	}
@@ -553,7 +553,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			m.LineEditor.Out.WriteByte('\r')
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 		} else {
-			m.moveUp(m.printAfter(0))
+			m.escA(m.printAfter(0))
 		}
 	}
 	if m.LineEditor.History != nil {
