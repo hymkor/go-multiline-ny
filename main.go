@@ -37,6 +37,7 @@ func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
 func (m *Editor) SetDefault(d []string)                         { m.defaults = d }
 func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = value }
+func (m *Editor) CursorLine() int                               { return m.csrline }
 
 // Deprecated:
 func (m *Editor) SwapEnter() error {
