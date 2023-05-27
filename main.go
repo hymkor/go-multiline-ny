@@ -411,18 +411,6 @@ func (m *Editor) nextHistory(_ context.Context, b *readline.Buffer) readline.Res
 	return readline.ENTER
 }
 
-func (m *Editor) clear(_ context.Context, b *readline.Buffer) readline.Result {
-	m.after = func(string) bool {
-		m.escA(m.csrline - m.headline)
-		io.WriteString(m.LineEditor.Out, "\r\x1B[J")
-		m.csrline = 0
-		m.lines = m.lines[:0]
-		m.fixView()
-		return true
-	}
-	return readline.ENTER
-}
-
 func insertSliceAt(slice []string, pos int, newlines []string) []string {
 	backup := make([]string, len(slice)-pos)
 	copy(backup, slice[pos:])
@@ -546,7 +534,6 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
 	m.LineEditor.BindKey(keys.Delete, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.Down, ac(m.down))
-	m.LineEditor.BindKey(keys.Escape, ac(m.clear))
 	m.LineEditor.BindKey(keys.Left, ac(m.left))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
@@ -561,6 +548,11 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlC, ctrlC)
 	ctrlC.BindKey(keys.CtrlC, ac(m.Submit))          // C-cC-c: submit
 	ctrlC.BindKey(keys.CtrlQ, readline.CmdInterrupt) // C-cC-q: quit
+
+	escape := &PrefixCommand{}
+	m.LineEditor.BindKey(keys.Escape, escape)
+	escape.BindKey("p", ac(m.prevHistory)) // M-p: previous
+	escape.BindKey("n", ac(m.nextHistory)) // M-n: next
 
 	m.LineEditor.Init()
 	return nil
