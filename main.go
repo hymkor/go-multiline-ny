@@ -81,15 +81,25 @@ func (m *Editor) up(_ context.Context, _ *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
-	fmt.Fprintln(m.LineEditor.Out)
+func (m *Editor) GotoEndLine() func() {
 	end := min(len(m.lines), m.headline+m.viewHeight)
-	for i := m.csrline + 1; i < end; i++ {
+	lfCount := 0
+	for i := m.csrline; i < end; i++ {
 		fmt.Fprintln(m.LineEditor.Out)
+		lfCount++
 	}
 	m.LineEditor.Out.Flush()
+	return func() {
+		if lfCount > 0 {
+			fmt.Fprintf(m.LineEditor.Out, "\x1B[2K\x1B[%dF", lfCount)
+		}
+	}
+}
+
+func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 	m.after = func(line string) bool {
 		m.storeCurrentLine(line)
+		m.GotoEndLine()
 		return false
 	}
 	return readline.ENTER
@@ -484,6 +494,8 @@ func (m *Editor) init() error {
 	if err != nil {
 		return err
 	}
+	m.viewHeight-- // for status line
+
 	m.LineEditor.LineFeed = func(rc readline.Result) {
 		if rc != readline.ENTER {
 			fmt.Fprintln(m.LineEditor.Out)
