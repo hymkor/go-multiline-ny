@@ -1,3 +1,7 @@
+v0.11.1
+=======
+May 29, 2023
+
 - Add key assigns
     - ESC p : previous history
     - ESC n : next history
