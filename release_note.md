@@ -1,3 +1,13 @@
+- Change key assigns (like messengers on Emacs)
+    - C-cC-c or C-j : Submit
+    - C-cC-q : Abort
+    - ESC p : previous history
+    - ESC n : next history
+- Implement new methods:
+    - `(*Editor) Lines`
+    - `(*Editor) GotoEndLine`
+    - `(*Editor) CursorLine`
+
 v0.11.0
 =======
 May 19, 2023
