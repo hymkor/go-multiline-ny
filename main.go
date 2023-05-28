@@ -485,6 +485,26 @@ func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
+type PrefixCommand struct {
+	readline.KeyMap
+}
+
+func (*PrefixCommand) String() string {
+	return "PREFIX-COMMAND"
+}
+
+func (cx *PrefixCommand) Call(ctx context.Context, B *readline.Buffer) readline.Result {
+	key, err := B.GetKey()
+	if err != nil {
+		return readline.CONTINUE
+	}
+	f, ok := cx.KeyMap.Lookup(keys.Code(key))
+	if !ok {
+		return readline.CONTINUE
+	}
+	return f.Call(ctx, B)
+}
+
 func (m *Editor) init() error {
 	if m.viewWidth > 0 {
 		return nil
@@ -536,6 +556,11 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlJ, ac(m.Submit))
 	m.LineEditor.BindKey(keys.CtrlR, readline.SelfInserter(keys.CtrlR))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
+
+	ctrlC := &PrefixCommand{}
+	m.LineEditor.BindKey(keys.CtrlC, ctrlC)
+	ctrlC.BindKey(keys.CtrlC, ac(m.Submit))          // C-cC-c: submit
+	ctrlC.BindKey(keys.CtrlQ, readline.CmdInterrupt) // C-cC-q: quit
 
 	m.LineEditor.Init()
 	return nil
