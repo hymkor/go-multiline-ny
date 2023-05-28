@@ -1,6 +1,4 @@
-- Change key assigns (like messengers on Emacs)
-    - C-cC-c or C-j : Submit
-    - C-cC-q : Abort
+- Add key assigns
     - ESC p : previous history
     - ESC n : next history
 - Implement new methods:
