@@ -123,7 +123,7 @@ func (m *Editor) CmdNextLine(_ context.Context, _ *readline.Buffer) readline.Res
 	return readline.ENTER
 }
 
-func (m *Editor) left(ctx context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) CmdBackwardChar(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return readline.CmdBackwardChar.Call(ctx, b)
 	}
@@ -522,7 +522,7 @@ func (m *Editor) init() error {
 
 	m.LineEditor.BindKey(keys.AltN, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.AltP, ac(m.prevHistory))
-	m.LineEditor.BindKey(keys.CtrlB, ac(m.left))
+	m.LineEditor.BindKey(keys.CtrlB, ac(m.CmdBackwardChar))
 	m.LineEditor.BindKey(keys.CtrlD, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.CtrlF, ac(m.right))
@@ -534,7 +534,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
 	m.LineEditor.BindKey(keys.Delete, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.Down, ac(m.CmdNextLine))
-	m.LineEditor.BindKey(keys.Left, ac(m.left))
+	m.LineEditor.BindKey(keys.Left, ac(m.CmdBackwardChar))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.Right, ac(m.right))
