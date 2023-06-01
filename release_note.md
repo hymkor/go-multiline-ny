@@ -1,3 +1,8 @@
+- Rename and export Editor's methods:  
+  - CmdYank, CmdNextHistory, CmdPreviousHistory, CmdDeleteChar,  
+    CmdDeleteChar, CmdBackwardDeleteChar, CmdForwardChar,  
+    CmdBackwardChar, CmdPreviousChar, CmdNextLine  
+
 v0.11.1
 =======
 May 29, 2023
