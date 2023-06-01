@@ -218,7 +218,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 	return readline.ENTER
 }
 
-func (m *Editor) joinBelow(ctx context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline.Result {
 	if len(b.Buffer) <= 0 {
 		if len(m.lines) <= 0 {
 			return readline.CmdDeleteOrAbort.Call(ctx, b)
@@ -523,7 +523,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.AltN, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.AltP, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.CtrlB, ac(m.CmdBackwardChar))
-	m.LineEditor.BindKey(keys.CtrlD, ac(m.joinBelow))
+	m.LineEditor.BindKey(keys.CtrlD, ac(m.CmdDeleteChar))
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.CtrlF, ac(m.CmdForwardChar))
 	m.LineEditor.BindKey(keys.CtrlH, ac(m.CmdBackwardDeleteChar))
@@ -532,7 +532,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlP, ac(m.CmdPreviousLine))
 	m.LineEditor.BindKey(keys.CtrlUp, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
-	m.LineEditor.BindKey(keys.Delete, ac(m.joinBelow))
+	m.LineEditor.BindKey(keys.Delete, ac(m.CmdDeleteChar))
 	m.LineEditor.BindKey(keys.Down, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.Left, ac(m.CmdBackwardChar))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
