@@ -381,7 +381,7 @@ func (m *Editor) printCurrentHistoryRecord(string) bool {
 	return true
 }
 
-func (m *Editor) prevHistory(_ context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) CmdPreviousHistory(_ context.Context, b *readline.Buffer) readline.Result {
 	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
 		return readline.CONTINUE
 	}
@@ -521,7 +521,7 @@ func (m *Editor) init() error {
 	type ac = readline.AnonymousCommand
 
 	m.LineEditor.BindKey(keys.AltN, ac(m.nextHistory))
-	m.LineEditor.BindKey(keys.AltP, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.AltP, ac(m.CmdPreviousHistory))
 	m.LineEditor.BindKey(keys.CtrlB, ac(m.CmdBackwardChar))
 	m.LineEditor.BindKey(keys.CtrlD, ac(m.CmdDeleteChar))
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
@@ -530,13 +530,13 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
 	m.LineEditor.BindKey(keys.CtrlN, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.CtrlP, ac(m.CmdPreviousLine))
-	m.LineEditor.BindKey(keys.CtrlUp, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.CtrlUp, ac(m.CmdPreviousHistory))
 	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
 	m.LineEditor.BindKey(keys.Delete, ac(m.CmdDeleteChar))
 	m.LineEditor.BindKey(keys.Down, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.Left, ac(m.CmdBackwardChar))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
-	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
+	m.LineEditor.BindKey(keys.PageUp, ac(m.CmdPreviousHistory))
 	m.LineEditor.BindKey(keys.Right, ac(m.CmdForwardChar))
 	m.LineEditor.BindKey(keys.Up, ac(m.CmdPreviousLine))
 	m.LineEditor.BindKey(keys.CtrlM, ac(m.NewLine))
@@ -546,8 +546,8 @@ func (m *Editor) init() error {
 
 	escape := &PrefixCommand{}
 	m.LineEditor.BindKey(keys.Escape, escape)
-	escape.BindKey("p", ac(m.prevHistory)) // M-p: previous
-	escape.BindKey("n", ac(m.nextHistory)) // M-n: next
+	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
+	escape.BindKey("n", ac(m.nextHistory))        // M-n: next
 
 	m.LineEditor.Init()
 	return nil
