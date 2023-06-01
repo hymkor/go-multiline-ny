@@ -105,7 +105,7 @@ func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-func (m *Editor) down(_ context.Context, _ *readline.Buffer) readline.Result {
+func (m *Editor) CmdNextLine(_ context.Context, _ *readline.Buffer) readline.Result {
 	if m.csrline >= len(m.lines)-1 {
 		return readline.CONTINUE
 	}
@@ -528,12 +528,12 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlF, ac(m.right))
 	m.LineEditor.BindKey(keys.CtrlH, ac(m.joinAbove))
 	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
-	m.LineEditor.BindKey(keys.CtrlN, ac(m.down))
+	m.LineEditor.BindKey(keys.CtrlN, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.CtrlP, ac(m.up))
 	m.LineEditor.BindKey(keys.CtrlUp, ac(m.prevHistory))
 	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
 	m.LineEditor.BindKey(keys.Delete, ac(m.joinBelow))
-	m.LineEditor.BindKey(keys.Down, ac(m.down))
+	m.LineEditor.BindKey(keys.Down, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.Left, ac(m.left))
 	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.PageUp, ac(m.prevHistory))
