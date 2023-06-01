@@ -166,7 +166,7 @@ func (m *Editor) CmdForwardChar(ctx context.Context, b *readline.Buffer) readlin
 	return readline.ENTER
 }
 
-func (m *Editor) joinAbove(ctx context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return readline.CmdBackwardDeleteChar.Call(ctx, b)
 	}
@@ -526,7 +526,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlD, ac(m.joinBelow))
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
 	m.LineEditor.BindKey(keys.CtrlF, ac(m.CmdForwardChar))
-	m.LineEditor.BindKey(keys.CtrlH, ac(m.joinAbove))
+	m.LineEditor.BindKey(keys.CtrlH, ac(m.CmdBackwardDeleteChar))
 	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
 	m.LineEditor.BindKey(keys.CtrlN, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.CtrlP, ac(m.CmdPreviousLine))
