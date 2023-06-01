@@ -427,7 +427,7 @@ func min(i, j int) int {
 	return j
 }
 
-func (m *Editor) paste(_ context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result {
 	text, err := clipboard.ReadAll()
 	if err != nil {
 		return readline.CONTINUE
@@ -531,7 +531,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlN, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.CtrlP, ac(m.CmdPreviousLine))
 	m.LineEditor.BindKey(keys.CtrlUp, ac(m.CmdPreviousHistory))
-	m.LineEditor.BindKey(keys.CtrlY, ac(m.paste))
+	m.LineEditor.BindKey(keys.CtrlY, ac(m.CmdYank))
 	m.LineEditor.BindKey(keys.Delete, ac(m.CmdDeleteChar))
 	m.LineEditor.BindKey(keys.Down, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.Left, ac(m.CmdBackwardChar))
