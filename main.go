@@ -396,7 +396,7 @@ func (m *Editor) CmdPreviousHistory(_ context.Context, b *readline.Buffer) readl
 	return readline.ENTER
 }
 
-func (m *Editor) nextHistory(_ context.Context, b *readline.Buffer) readline.Result {
+func (m *Editor) CmdNextHistory(_ context.Context, b *readline.Buffer) readline.Result {
 	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
 		return readline.CONTINUE
 	}
@@ -520,11 +520,11 @@ func (m *Editor) init() error {
 
 	type ac = readline.AnonymousCommand
 
-	m.LineEditor.BindKey(keys.AltN, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.AltN, ac(m.CmdNextHistory))
 	m.LineEditor.BindKey(keys.AltP, ac(m.CmdPreviousHistory))
 	m.LineEditor.BindKey(keys.CtrlB, ac(m.CmdBackwardChar))
 	m.LineEditor.BindKey(keys.CtrlD, ac(m.CmdDeleteChar))
-	m.LineEditor.BindKey(keys.CtrlDown, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.CtrlDown, ac(m.CmdNextHistory))
 	m.LineEditor.BindKey(keys.CtrlF, ac(m.CmdForwardChar))
 	m.LineEditor.BindKey(keys.CtrlH, ac(m.CmdBackwardDeleteChar))
 	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
@@ -535,7 +535,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.Delete, ac(m.CmdDeleteChar))
 	m.LineEditor.BindKey(keys.Down, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.Left, ac(m.CmdBackwardChar))
-	m.LineEditor.BindKey(keys.PageDown, ac(m.nextHistory))
+	m.LineEditor.BindKey(keys.PageDown, ac(m.CmdNextHistory))
 	m.LineEditor.BindKey(keys.PageUp, ac(m.CmdPreviousHistory))
 	m.LineEditor.BindKey(keys.Right, ac(m.CmdForwardChar))
 	m.LineEditor.BindKey(keys.Up, ac(m.CmdPreviousLine))
@@ -547,7 +547,7 @@ func (m *Editor) init() error {
 	escape := &PrefixCommand{}
 	m.LineEditor.BindKey(keys.Escape, escape)
 	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
-	escape.BindKey("n", ac(m.nextHistory))        // M-n: next
+	escape.BindKey("n", ac(m.CmdNextHistory))     // M-n: next
 
 	m.LineEditor.Init()
 	return nil
