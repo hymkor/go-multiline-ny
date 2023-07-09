@@ -90,7 +90,7 @@ func (m *Editor) GotoEndLine() func() {
 	m.LineEditor.Out.Flush()
 	return func() {
 		if lfCount > 0 {
-			fmt.Fprintf(m.LineEditor.Out, "\x1B[2K\x1B[%dF", lfCount)
+			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dF", lfCount)
 		}
 	}
 }
