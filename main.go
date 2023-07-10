@@ -82,6 +82,9 @@ func (m *Editor) CmdPreviousLine(_ context.Context, _ *readline.Buffer) readline
 
 func (m *Editor) GotoEndLine() func() {
 	end := min(len(m.lines), m.headline+m.viewHeight)
+	if end < 1 {
+		end = 1
+	}
 	lfCount := 0
 	for i := m.csrline; i < end; i++ {
 		fmt.Fprintln(m.LineEditor.Out)
