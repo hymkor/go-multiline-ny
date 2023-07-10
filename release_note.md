@@ -2,6 +2,8 @@
   - CmdYank, CmdNextHistory, CmdPreviousHistory, CmdDeleteChar,  
     CmdDeleteChar, CmdBackwardDeleteChar, CmdForwardChar,  
     CmdBackwardChar, CmdPreviousChar, CmdNextLine  
+- Fix: GotoEndLine did not work as expected when .lines[] is lower than 1
+- Rename storeCurrentLine() to Sync() (new public method)
 
 v0.11.1
 =======
