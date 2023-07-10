@@ -18,6 +18,7 @@ import (
 
 type Editor struct {
 	LineEditor readline.Editor
+	Dirty      bool
 	csrline    int
 	lines      []string
 	after      func(string) bool
@@ -47,11 +48,15 @@ func (m *Editor) SwapEnter() error {
 	return nil
 }
 
-func (m *Editor) storeCurrentLine(line string) {
+func (m *Editor) Sync(line string) {
 	if m.csrline >= len(m.lines) {
 		m.lines = append(m.lines, line)
+		m.Dirty = true
 	} else {
-		m.lines[m.csrline] = line
+		if m.lines[m.csrline] != line {
+			m.Dirty = true
+			m.lines[m.csrline] = line
+		}
 	}
 }
 
@@ -68,7 +73,7 @@ func (m *Editor) CmdPreviousLine(_ context.Context, _ *readline.Buffer) readline
 		return readline.CONTINUE
 	}
 	m.after = func(line string) bool {
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		m.csrline--
 		if m.fixView() < 0 {
 			m.up(m.printAfter(m.csrline))
@@ -100,7 +105,7 @@ func (m *Editor) GotoEndLine() func() {
 
 func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 	m.after = func(line string) bool {
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		m.GotoEndLine()
 		return false
 	}
@@ -112,7 +117,7 @@ func (m *Editor) CmdNextLine(_ context.Context, _ *readline.Buffer) readline.Res
 		return readline.CONTINUE
 	}
 	m.after = func(line string) bool {
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		m.csrline++
 		if m.fixView() > 0 {
 			m.up(m.csrline - m.headline)
@@ -133,7 +138,7 @@ func (m *Editor) CmdBackwardChar(ctx context.Context, b *readline.Buffer) readli
 		return readline.CONTINUE
 	}
 	m.after = func(line string) bool {
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		m.csrline--
 		if m.fixView() < 0 {
 			m.up(m.printAfter(m.csrline))
@@ -154,7 +159,7 @@ func (m *Editor) CmdForwardChar(ctx context.Context, b *readline.Buffer) readlin
 		return readline.CONTINUE
 	}
 	m.after = func(line string) bool {
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		m.csrline++
 		m.LineEditor.Cursor = 0
 		if m.fixView() > 0 {
@@ -181,6 +186,7 @@ func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) 
 			m.fixView()
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 			m.lines[m.csrline] = m.lines[m.csrline] + line
+			m.Dirty = true
 			if m.csrline+1 < len(m.lines) {
 				copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
 				m.lines = m.lines[:len(m.lines)-1]
@@ -210,7 +216,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 
 	m.after = func(line string) bool {
 		io.WriteString(m.LineEditor.Out, "\x1B[K\n")
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		m.LineEditor.Cursor = 0
 		m.csrline++
 		m.fixView()
@@ -221,6 +227,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 }
 
 func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline.Result {
+	m.Dirty = true
 	if len(b.Buffer) <= 0 {
 		if len(m.lines) <= 0 {
 			return readline.CmdDeleteOrAbort.Call(ctx, b)
@@ -374,6 +381,7 @@ func (m *Editor) printCurrentHistoryRecord(string) bool {
 	// clear
 	m.up(m.csrline - m.headline)
 	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
+	m.Dirty = true
 	m.csrline = len(m.lines) - 1
 	m.fixView()
 	lfCount := m.printAfter(m.headline)
@@ -458,7 +466,7 @@ func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result 
 	newlines[len(newlines)-1] += tmp
 
 	m.after = func(line string) bool {
-		m.storeCurrentLine(line)
+		m.Sync(line)
 		fmt.Fprintln(m.LineEditor.Out)
 		m.csrline++
 		m.fixView()
