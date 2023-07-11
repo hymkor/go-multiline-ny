@@ -241,15 +241,13 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 	}
 	if m.csrline+1 < len(m.lines) {
 		b.InsertString(b.Cursor, m.lines[m.csrline+1])
-		b.Out.WriteString("\x1B[s")
+		b.RepaintAfterPrompt()
 		copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
 		m.lines = m.lines[:len(m.lines)-1]
-		for i := m.csrline + 1; i < len(m.lines); i++ {
-			fmt.Fprintln(m.LineEditor.Out)
-			m.printOne(i)
-		}
-		b.Out.WriteString("\x1B[J\x1B[u")
-		b.RepaintAll()
+		io.WriteString(b.Out, "\x1B[s")
+		fmt.Fprintln(m.LineEditor.Out)
+		m.printAfter(m.csrline + 1)
+		io.WriteString(b.Out, "\x1B[u")
 		b.Out.Flush()
 	}
 	return readline.CONTINUE
