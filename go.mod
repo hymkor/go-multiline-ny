@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/mattn/go-colorable v0.1.12
-	github.com/mattn/go-runewidth v0.0.14
-	github.com/nyaosorg/go-readline-ny v0.13.2-0.20230710080223-8363dee7e3c1
-	golang.org/x/term v0.8.0
+	github.com/mattn/go-runewidth v0.0.15
+	github.com/nyaosorg/go-readline-ny v0.13.2
+	golang.org/x/term v0.10.0
 )
 
 require (
