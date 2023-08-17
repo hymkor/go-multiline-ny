@@ -1,3 +1,7 @@
+v0.11.2
+=======
+Aug 17, 2023
+
 - Rename and export Editor's methods:  
   - CmdYank, CmdNextHistory, CmdPreviousHistory, CmdDeleteChar,  
     CmdDeleteChar, CmdBackwardDeleteChar, CmdForwardChar,  
