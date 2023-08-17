@@ -4,6 +4,7 @@
     CmdBackwardChar, CmdPreviousChar, CmdNextLine  
 - Fix: GotoEndLine did not work as expected when .lines[] is lower than 1
 - Rename storeCurrentLine() to Sync() (new public method)
+- Fix: display disorder when deleting a blank line with C-d
 
 v0.11.1
 =======
