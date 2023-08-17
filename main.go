@@ -188,8 +188,7 @@ func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) 
 			m.lines[m.csrline] = m.lines[m.csrline] + line
 			m.Dirty = true
 			if m.csrline+1 < len(m.lines) {
-				copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
-				m.lines = m.lines[:len(m.lines)-1]
+				m.lines = deleteSliceAt(m.lines,m.csrline+1)
 			}
 			io.WriteString(m.LineEditor.Out, "\x1B[A\r\x1B[s")
 			m.printAfter(m.csrline)
@@ -242,8 +241,7 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 	if m.csrline+1 < len(m.lines) {
 		b.InsertString(b.Cursor, m.lines[m.csrline+1])
 		b.RepaintAfterPrompt()
-		copy(m.lines[m.csrline+1:], m.lines[m.csrline+2:])
-		m.lines = m.lines[:len(m.lines)-1]
+		m.lines = deleteSliceAt(m.lines, m.csrline+1)
 		io.WriteString(b.Out, "\x1B[s")
 		fmt.Fprintln(m.LineEditor.Out)
 		m.printAfter(m.csrline + 1)
@@ -251,6 +249,11 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 		b.Out.Flush()
 	}
 	return readline.CONTINUE
+}
+
+func deleteSliceAt(array []string, at int) []string {
+	copy(array[at:], array[at+1:])
+	return array[:len(array)-1]
 }
 
 const forbiddenWidth = 3
