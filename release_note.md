@@ -1,3 +1,5 @@
+- Fix: Dirty flag was not set on inserting an empty line after an empty line
+
 v0.11.2
 =======
 Aug 17, 2023
