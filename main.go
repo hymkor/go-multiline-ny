@@ -210,6 +210,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 	// move characters after cursor to the nextline
 	m.lines[m.csrline+1] = b.SubString(b.Cursor, len(b.Buffer))
 	b.Buffer = b.Buffer[:b.Cursor]
+	m.Dirty = true
 
 	b.RepaintAll()
 
