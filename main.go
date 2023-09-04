@@ -41,8 +41,8 @@ func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = va
 func (m *Editor) CursorLine() int                               { return m.csrline }
 func (m *Editor) Lines() []string                               { return m.lines }
 
-// EnterToCommitWhen sets the condition to submit when Enter-key is pressed.
-func (m *Editor) EnterToCommitWhen(f func([]string, int) bool) {
+// SubmitOnEnterWhen defines the condition to submit when Enter-key is pressed.
+func (m *Editor) SubmitOnEnterWhen(f func([]string, int) bool) {
 	if f == nil {
 		m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.Submit))
 		return
