@@ -41,6 +41,24 @@ func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = va
 func (m *Editor) CursorLine() int                               { return m.csrline }
 func (m *Editor) Lines() []string                               { return m.lines }
 
+// EnterToCommitWhen sets the condition to submit when Enter-key is pressed.
+func (m *Editor) EnterToCommitWhen(f func([]string, int) bool) {
+	if f == nil {
+		m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.Submit))
+		return
+	}
+	m.BindKey(keys.CtrlM, &readline.GoCommand{
+		Name: "EnterToCommitWhen",
+		Func: func(ctx context.Context, B *readline.Buffer) readline.Result {
+			m.Sync(B.String())
+			if f(m.lines, m.csrline) {
+				return m.Submit(ctx, B)
+			}
+			return m.NewLine(ctx, B)
+		},
+	})
+}
+
 // Deprecated:
 func (m *Editor) SwapEnter() error {
 	m.BindKey(keys.CtrlM, readline.AnonymousCommand(m.Submit))
