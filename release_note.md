@@ -1,4 +1,5 @@
 - Fix: Dirty flag was not set on inserting an empty line after an empty line
+- Implement `(*Editor) EnterToCommitWhen`
 
 v0.11.2
 =======
