@@ -1,3 +1,7 @@
+v0.12.0
+=======
+Sep 2, 2023
+
 - Fix: Dirty flag was not set on inserting an empty line after an empty line
 - Implement `(*Editor) SubmitOnEnterWhen`
 
