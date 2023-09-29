@@ -1,3 +1,6 @@
+- Fix: Could not build with go-readline-ny v0.15.0
+    - Use `(*Editor) LineFeedWriter` instead of `LineFeed`
+
 v0.12.0
 =======
 Sep 2, 2023
