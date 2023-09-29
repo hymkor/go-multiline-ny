@@ -534,10 +534,11 @@ func (m *Editor) init() error {
 	}
 	m.viewHeight-- // for status line
 
-	m.LineEditor.LineFeed = func(rc readline.Result) {
+	m.LineEditor.LineFeedWriter = func(rc readline.Result, w io.Writer) (int, error) {
 		if rc != readline.ENTER {
-			fmt.Fprintln(m.LineEditor.Out)
+			return fmt.Fprintln(w)
 		}
+		return 0, nil
 	}
 	if m.prompt == nil {
 		m.prompt = func(w io.Writer, i int) (int, error) {
