@@ -1,3 +1,13 @@
+- Modify the features of Ctrl-P and Ctrl-N
+    - **Ctrl-P** :
+        When the cursor exists the top of lines,
+        move BACK through the history list, fetching the previous lines.
+        Otherwise move the cursor to the previous line.
+    - **Ctrl-N** :
+        When the cursor exists the bottom of lines,
+        move FORWARD through the history list, fetching the next lines.
+        Otherwise move the cursor to the next line.
+
 v0.12.1
 =======
 Sep 30, 2023
