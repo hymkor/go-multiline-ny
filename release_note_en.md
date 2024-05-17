@@ -1,3 +1,7 @@
+v0.13.0
+=======
+May 18, 2024
+
 - Modify the features of Ctrl-P and Ctrl-N
     - **Ctrl-P** :
         When the cursor exists the top of lines,
