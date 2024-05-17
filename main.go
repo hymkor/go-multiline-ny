@@ -86,9 +86,9 @@ func (m *Editor) up(n int) {
 	}
 }
 
-func (m *Editor) CmdPreviousLine(_ context.Context, _ *readline.Buffer) readline.Result {
+func (m *Editor) CmdPreviousLine(ctx context.Context, rl *readline.Buffer) readline.Result {
 	if m.csrline <= 0 {
-		return readline.CONTINUE
+		return m.CmdPreviousHistory(ctx, rl)
 	}
 	m.after = func(line string) bool {
 		m.Sync(line)
