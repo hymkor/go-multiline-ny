@@ -130,9 +130,11 @@ func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 	return readline.ENTER
 }
 
-func (m *Editor) CmdNextLine(_ context.Context, _ *readline.Buffer) readline.Result {
+func (m *Editor) CmdNextLine(ctx context.Context, rl *readline.Buffer) readline.Result {
 	if m.csrline >= len(m.lines)-1 {
-		return readline.CONTINUE
+		m.CmdNextHistory(ctx, rl)
+		m.after = m.printCurrentHistoryRecordAndGoToTop
+		return readline.ENTER
 	}
 	m.after = func(line string) bool {
 		m.Sync(line)
@@ -397,17 +399,30 @@ func (m *Editor) fixView() int {
 	return 0
 }
 
-func (m *Editor) printCurrentHistoryRecord(string) bool {
+func (m *Editor) _printCurrentHistoryRecord(tail bool) {
 	// clear
 	m.up(m.csrline - m.headline)
 	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
 	m.Dirty = true
-	m.csrline = len(m.lines) - 1
+	if tail {
+		m.csrline = 0
+	} else {
+		m.csrline = len(m.lines) - 1
+	}
 	m.fixView()
 	lfCount := m.printAfter(m.headline)
 	lfCount -= (m.csrline - m.headline)
 	m.up(lfCount)
 	m.LineEditor.Cursor = 9999
+}
+
+func (m *Editor) printCurrentHistoryRecord(string) bool {
+	m._printCurrentHistoryRecord(false)
+	return true
+}
+
+func (m *Editor) printCurrentHistoryRecordAndGoToTop(string) bool {
+	m._printCurrentHistoryRecord(true)
 	return true
 }
 
