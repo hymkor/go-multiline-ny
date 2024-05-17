@@ -29,6 +29,7 @@ type Editor struct {
 	prompt     func(w io.Writer, i int) (int, error)
 	defaults   []string
 	moveEnd    bool
+	saveLast   string
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -402,7 +403,11 @@ func (m *Editor) fixView() int {
 func (m *Editor) _printCurrentHistoryRecord(tail bool) {
 	// clear
 	m.up(m.csrline - m.headline)
-	m.lines = strings.Split(m.LineEditor.History.At(m.historyPtr), "\n")
+	if h := m.LineEditor.History; m.historyPtr >= h.Len() {
+		m.lines = strings.Split(m.saveLast, "\n")
+	} else {
+		m.lines = strings.Split(h.At(m.historyPtr), "\n")
+	}
 	m.Dirty = true
 	if tail {
 		m.csrline = 0
@@ -430,13 +435,18 @@ func (m *Editor) CmdPreviousHistory(_ context.Context, b *readline.Buffer) readl
 	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
 		return readline.CONTINUE
 	}
+	if m.historyPtr == m.LineEditor.History.Len() {
+		m.Sync(b.String())
+		m.saveLast = strings.Join(m.lines, "\n")
+	}
 	if m.historyPtr <= 0 {
 		if !m.LineEditor.HistoryCycling {
 			return readline.CONTINUE
 		}
 		m.historyPtr = m.LineEditor.History.Len()
+	} else {
+		m.historyPtr--
 	}
-	m.historyPtr--
 	m.after = m.printCurrentHistoryRecord
 	return readline.ENTER
 }
@@ -445,10 +455,12 @@ func (m *Editor) CmdNextHistory(_ context.Context, b *readline.Buffer) readline.
 	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
 		return readline.CONTINUE
 	}
-	if m.historyPtr+1 >= m.LineEditor.History.Len() {
+	if m.historyPtr >= m.LineEditor.History.Len() {
 		if !m.LineEditor.HistoryCycling {
 			return readline.CONTINUE
 		}
+		m.Sync(b.String())
+		m.saveLast = strings.Join(m.lines, "\n")
 		m.historyPtr = -1
 	}
 	m.historyPtr++
