@@ -9,8 +9,8 @@ This is the readline package that supports multiline input and extends [go-readl
 |-----|---------
 | Ctrl-M or Enter | Insert a new line[^Y]
 | Ctrl-J(or Ctrl-Enter[^X]) | Submit all lines
-| Ctrl-P or Up | Move the cursor to the previous line
-| Ctrl-N or Down | Move the cursor to the next line
+| Ctrl-P or Up   | Move cursor to previous line or last line of previous set of inputs in history
+| Ctrl-N or Down | Move cursor to next line or first line of next set of inputs in history
 | Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
 | Alt-N or Ctrl-Down | Fetch the next lines-set of the history
 | Ctrl-Y | Paste the string in the clipboard
