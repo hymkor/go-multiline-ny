@@ -1,3 +1,5 @@
+- The text before the first Ctrl-P/N is treated as if it were the latest entry in the history not to lose them
+
 v0.13.0
 =======
 May 18, 2024
