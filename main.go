@@ -17,19 +17,19 @@ import (
 )
 
 type Editor struct {
-	LineEditor readline.Editor
-	Dirty      bool
-	csrline    int
-	lines      []string
-	after      func(string) bool
-	historyPtr int
-	viewWidth  int // when viewWidth==0, it means the instance is not initialized, yet
-	viewHeight int
-	headline   int // the first line on the screen
-	prompt     func(w io.Writer, i int) (int, error)
-	defaults   []string
-	moveEnd    bool
-	saveLast   string
+	LineEditor           readline.Editor
+	Dirty                bool
+	csrline              int
+	lines                []string
+	after                func(string) bool
+	historyPtr           int
+	viewWidth            int // when viewWidth==0, it means the instance is not initialized, yet
+	viewHeight           int
+	headline             int // the first line on the screen
+	prompt               func(w io.Writer, i int) (int, error)
+	defaults             []string
+	moveEnd              bool
+	modifiedHistoryEntry map[int]string
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -403,9 +403,9 @@ func (m *Editor) fixView() int {
 func (m *Editor) _printCurrentHistoryRecord(tail bool) {
 	// clear
 	m.up(m.csrline - m.headline)
-	if h := m.LineEditor.History; m.historyPtr >= h.Len() {
-		m.lines = strings.Split(m.saveLast, "\n")
-	} else {
+	if value, ok := m.modifiedHistoryEntry[m.historyPtr]; ok {
+		m.lines = strings.Split(value, "\n")
+	} else if h := m.LineEditor.History; m.historyPtr < h.Len() {
 		m.lines = strings.Split(h.At(m.historyPtr), "\n")
 	}
 	m.Dirty = true
@@ -431,14 +431,20 @@ func (m *Editor) printCurrentHistoryRecordAndGoToTop(string) bool {
 	return true
 }
 
+func (m *Editor) saveModfiedHistory(b *readline.Buffer) {
+	m.Sync(b.String())
+	alllines := strings.Join(m.lines, "\n")
+	if m.historyPtr >= m.LineEditor.History.Len() ||
+		m.LineEditor.History.At(m.historyPtr) != alllines {
+		m.modifiedHistoryEntry[m.historyPtr] = alllines
+	}
+}
+
 func (m *Editor) CmdPreviousHistory(_ context.Context, b *readline.Buffer) readline.Result {
 	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
 		return readline.CONTINUE
 	}
-	if m.historyPtr == m.LineEditor.History.Len() {
-		m.Sync(b.String())
-		m.saveLast = strings.Join(m.lines, "\n")
-	}
+	m.saveModfiedHistory(b)
 	if m.historyPtr <= 0 {
 		if !m.LineEditor.HistoryCycling {
 			return readline.CONTINUE
@@ -455,12 +461,11 @@ func (m *Editor) CmdNextHistory(_ context.Context, b *readline.Buffer) readline.
 	if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
 		return readline.CONTINUE
 	}
+	m.saveModfiedHistory(b)
 	if m.historyPtr >= m.LineEditor.History.Len() {
 		if !m.LineEditor.HistoryCycling {
 			return readline.CONTINUE
 		}
-		m.Sync(b.String())
-		m.saveLast = strings.Join(m.lines, "\n")
 		m.historyPtr = -1
 	}
 	m.historyPtr++
@@ -551,6 +556,13 @@ func (cx *PrefixCommand) Call(ctx context.Context, B *readline.Buffer) readline.
 }
 
 func (m *Editor) init() error {
+	if m.modifiedHistoryEntry == nil {
+		m.modifiedHistoryEntry = make(map[int]string)
+	} else {
+		for key := range m.modifiedHistoryEntry {
+			delete(m.modifiedHistoryEntry, key)
+		}
+	}
 	if m.viewWidth > 0 {
 		return nil
 	}
