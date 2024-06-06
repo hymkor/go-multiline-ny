@@ -1,3 +1,5 @@
+- Not only the last entry of history, but all modified entries are kept the last value until submit
+
 v0.14.0
 ========
 May 27, 2024
