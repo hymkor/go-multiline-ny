@@ -1,4 +1,8 @@
-- Not only the last entry of history, but all modified entries are kept the last value until submit
+v0.15.0
+=======
+Jun 10, 2024
+
+- Not only the last entry of history, but all modified entries are kept the last value until the current input is completed
 
 v0.14.0
 ========
