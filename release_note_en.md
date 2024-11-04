@@ -1,3 +1,7 @@
+v0.16.0
+=======
+Nov 4, 2024
+
 - The prediction of go-readline-ny v1.6.0 is available now on the bottom line
 
 v0.15.0
