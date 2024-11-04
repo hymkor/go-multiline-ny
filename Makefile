@@ -1,5 +1,5 @@
 all:
-	go fmt
+	go fmt ./...
 	go build
 
 demo:
