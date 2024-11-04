@@ -177,7 +177,8 @@ func (m *Editor) CmdForwardChar(ctx context.Context, b *readline.Buffer) readlin
 		return readline.CmdForwardChar.Call(ctx, b)
 	}
 	if m.csrline+1 >= len(m.lines) {
-		return readline.CONTINUE
+		// To complete with the string of prediction
+		return readline.CmdForwardChar.Call(ctx, b)
 	}
 	m.after = func(line string) bool {
 		m.Sync(line)
@@ -553,6 +554,33 @@ func (cx *PrefixCommand) Call(ctx context.Context, B *readline.Buffer) readline.
 		return readline.CONTINUE
 	}
 	return f.Call(ctx, B)
+}
+
+func (m *Editor) predictor(B *readline.Buffer) string {
+	if m.csrline < len(m.lines)-1 {
+		return ""
+	}
+	current := strings.TrimSpace(B.String())
+	if len(current) <= 0 {
+		return ""
+	}
+	for i := B.History.Len() - 1; i >= 0; i-- {
+		lines := B.History.At(i)
+		for _, line := range strings.Split(lines, "\n") {
+			_line := strings.TrimSpace(line)
+			if strings.HasPrefix(_line, current) {
+				return _line[len(current):]
+			}
+		}
+	}
+	return ""
+}
+
+// SetPredictColor enables the prediction of go-readline-ny v1.5.0 and specify the colors
+// (e.g.) `m.SetPredictColor([...]string{"\x1B[3;22;34m", "\x1B[23;39m"})`
+func (m *Editor) SetPredictColor(colors [2]string) {
+	m.LineEditor.Predictor = m.predictor
+	m.LineEditor.PredictColor = colors
 }
 
 func (m *Editor) init() error {

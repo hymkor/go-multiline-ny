@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/nyaosorg/go-readline-ny"
 	"github.com/hymkor/go-multiline-ny"
 	"github.com/mattn/go-colorable"
 	"github.com/nyaosorg/go-readline-ny/simplehistory"
@@ -30,6 +31,7 @@ func main() {
 	ed.SetPrompt(func(w io.Writer, lnum int) (int, error) {
 		return fmt.Fprintf(w, "[%d] ", lnum+1)
 	})
+	ed.SetPredictColor(readline.PredictColorBlueItalic)
 
 	// To enable escape sequence on Windows.
 	// (On other operating systems, it can be ommited)
