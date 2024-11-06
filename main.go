@@ -30,6 +30,7 @@ type Editor struct {
 	defaults             []string
 	moveEnd              bool
 	modifiedHistoryEntry map[int]string
+	promptLastLineOnly   bool
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -304,12 +305,44 @@ func cutEscapeSequenceAndOldLine(s string) string {
 	return buffer.String()
 }
 
+func printLastLine(p string, w io.Writer) {
+	for {
+		var line string
+		var ok bool
+
+		line, p, ok = strings.Cut(p, "\n")
+		if !ok {
+			io.WriteString(w, line)
+			return
+		}
+		escapeStart := -1
+		for i := 0; i < len(line); i++ {
+			c := line[i]
+			if c == '\x1B' {
+				escapeStart = i
+			}
+			if escapeStart >= 0 && (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')) {
+				io.WriteString(w, line[escapeStart:i+1])
+				escapeStart = -1
+			}
+		}
+		if escapeStart >= 0 {
+			io.WriteString(w, line[escapeStart:])
+		}
+	}
+}
+
 func (m *Editor) printOne(i int) {
 	var buffer strings.Builder
 	m.prompt(&buffer, i)
 	promptStr := buffer.String()
+	if i != 0 || m.promptLastLineOnly {
+		printLastLine(promptStr, m.LineEditor.Out)
+	} else {
+		io.WriteString(m.LineEditor.Out, promptStr)
+	}
+	m.promptLastLineOnly = true
 
-	io.WriteString(m.LineEditor.Out, promptStr)
 	w0 := int(readline.GetStringWidth(cutEscapeSequenceAndOldLine(promptStr)))
 	w := w0
 	defaultColor := m.LineEditor.Coloring.Init()
@@ -613,6 +646,14 @@ func (m *Editor) init() error {
 		}
 	}
 	m.LineEditor.PromptWriter = func(w io.Writer) (int, error) {
+		if m.csrline != 0 || m.promptLastLineOnly {
+			var buffer strings.Builder
+			m.prompt(&buffer, m.csrline)
+			promptStr := buffer.String()
+			printLastLine(promptStr, w)
+			return len(promptStr), nil
+		}
+		m.promptLastLineOnly = true
 		return m.prompt(w, m.csrline)
 	}
 
@@ -660,6 +701,9 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 }
 
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
+	defer func() {
+		m.promptLastLineOnly = false
+	}()
 	if err := m.init(); err != nil {
 		return nil, err
 	}

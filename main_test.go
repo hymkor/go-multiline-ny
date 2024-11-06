@@ -31,3 +31,19 @@ func TestEditorRead(t *testing.T) {
 		t.Fatalf("expect %#v, but %#v", expect, result)
 	}
 }
+
+func TestPrintLastLine(t *testing.T) {
+	cases := [][2]string{
+		[2]string{"test\nprompt", "prompt"},
+		[2]string{"test\x1B[32m\nprompt\x1B[0m", "\x1B[32mprompt\x1B[0m"},
+	}
+	for _, case1 := range cases {
+		var buffer strings.Builder
+		printLastLine(case1[0], &buffer)
+		result := buffer.String()
+
+		if case1[1] != result {
+			t.Fatalf("expect %s, but %s", case1[1], result)
+		}
+	}
+}
