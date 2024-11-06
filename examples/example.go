@@ -10,9 +10,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nyaosorg/go-readline-ny"
 	"github.com/hymkor/go-multiline-ny"
 	"github.com/mattn/go-colorable"
+	"github.com/nyaosorg/go-readline-ny"
 	"github.com/nyaosorg/go-readline-ny/simplehistory"
 )
 
