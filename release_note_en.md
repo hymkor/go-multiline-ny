@@ -1,3 +1,6 @@
+- Prevent from incorrect rendering when the prompt includes `\n`
+  (All lines except the last one of the prompt are displayed only on the first line of the edit line)
+
 v0.16.0
 =======
 Nov 4, 2024
