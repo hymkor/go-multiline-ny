@@ -1,3 +1,5 @@
+- With modifying go-readline-ny on v1.6.1: Fix: some text was missing when pasting multi-lines using the terminal feature of Linux Desktop
+
 v0.16.1
 =======
 Nov 7, 2024
