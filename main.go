@@ -31,6 +31,7 @@ type Editor struct {
 	moveEnd              bool
 	modifiedHistoryEntry map[int]string
 	promptLastLineOnly   bool
+	StatusLineHeight     int
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -632,7 +633,7 @@ func (m *Editor) init() error {
 	if err != nil {
 		return err
 	}
-	m.viewHeight-- // for status line
+	m.viewHeight -= m.StatusLineHeight
 
 	m.LineEditor.LineFeedWriter = func(rc readline.Result, w io.Writer) (int, error) {
 		if rc != readline.ENTER {
