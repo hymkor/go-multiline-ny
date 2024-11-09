@@ -135,6 +135,12 @@ func (m *Editor) Submit(_ context.Context, B *readline.Buffer) readline.Result {
 
 func (m *Editor) CmdNextLine(ctx context.Context, rl *readline.Buffer) readline.Result {
 	if m.csrline >= len(m.lines)-1 {
+		if m.LineEditor.History == nil || m.LineEditor.History.Len() <= 0 {
+			return readline.CONTINUE
+		}
+		if m.historyPtr >= m.LineEditor.History.Len() {
+			return readline.CONTINUE
+		}
 		m.CmdNextHistory(ctx, rl)
 		m.after = m.printCurrentHistoryRecordAndGoToTop
 		return readline.ENTER
