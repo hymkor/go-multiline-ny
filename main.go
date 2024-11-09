@@ -82,8 +82,8 @@ func (m *Editor) Sync(line string) {
 }
 
 func (m *Editor) up(n int) {
-	if n == 1 {
-		io.WriteString(m.LineEditor.Out, "\x1B[F")
+	if n == 0 {
+		m.LineEditor.Out.Write([]byte{'\r'})
 	} else if n > 0 {
 		fmt.Fprintf(m.LineEditor.Out, "\x1B[%dF", n)
 	}
@@ -99,7 +99,7 @@ func (m *Editor) CmdPreviousLine(ctx context.Context, rl *readline.Buffer) readl
 		if m.fixView() < 0 {
 			m.up(m.printAfter(m.csrline))
 		} else {
-			fmt.Fprint(m.LineEditor.Out, "\x1B[F")
+			fmt.Fprint(m.LineEditor.Out, "\x1B[1F")
 		}
 		return true
 	}
@@ -172,7 +172,7 @@ func (m *Editor) CmdBackwardChar(ctx context.Context, b *readline.Buffer) readli
 		if m.fixView() < 0 {
 			m.up(m.printAfter(m.csrline))
 		} else {
-			fmt.Fprint(m.LineEditor.Out, "\x1B[F")
+			fmt.Fprint(m.LineEditor.Out, "\x1B[1F")
 		}
 		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 		return true
