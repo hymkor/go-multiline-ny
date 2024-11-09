@@ -1,3 +1,7 @@
+v0.16.3
+=======
+Nov 9, 2023
+
 - Fix: when editing the longer lines than screen height, the number of the lines scrolling was one line short
   ( It seemed to assume the height of status line which does not exist on default, therefore make the field `.StatusLineHeight` and use it as the height of the status line. )
 - Fix: with no next history entry, when trying to move to the next line at the bottom line, cursor had moved at the top line.
