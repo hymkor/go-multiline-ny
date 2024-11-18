@@ -673,6 +673,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlDown, ac(m.CmdNextHistory))
 	m.LineEditor.BindKey(keys.CtrlF, ac(m.CmdForwardChar))
 	m.LineEditor.BindKey(keys.CtrlH, ac(m.CmdBackwardDeleteChar))
+	m.LineEditor.BindKey(keys.Backspace, ac(m.CmdBackwardDeleteChar))
 	m.LineEditor.BindKey(keys.CtrlL, ac(m.repaint))
 	m.LineEditor.BindKey(keys.CtrlN, ac(m.CmdNextLine))
 	m.LineEditor.BindKey(keys.CtrlP, ac(m.CmdPreviousLine))
