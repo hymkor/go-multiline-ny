@@ -14,14 +14,13 @@ v0.16.2
 =======
 Nov 9, 2024
 
-- With modifying go-readline-ny on v1.6.1: Fix: some text was missing when pasting multi-lines using the terminal feature of Linux Desktop
+- With modifying go-readline-ny on v1.6.1: Fix: some text was missing when pasting multi-lines using the terminal feature of Linux Desktop (#3,Thanks to @apstndb)
 
 v0.16.1
 =======
 Nov 7, 2024
 
-- Prevent from incorrect rendering when the prompt includes `\n`
-  (All lines except the last one of the prompt are displayed only on the first line of the edit line)
+- Prevent from incorrect rendering when the prompt includes `\n` (All lines except the last one of the prompt are displayed only on the first line of the edit line,Thanks to @apstndb)
 
 v0.16.0
 =======
