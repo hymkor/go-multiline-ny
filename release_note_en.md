@@ -1,3 +1,6 @@
+- Fix: on the legacy terminal of Windows, cursor does not move to the upper line
+- Fix: on the terminal of Linux/macOS desktop, backspace-key could not remove the line feed (#5,Thanks to @apstndb)
+
 v0.16.3
 =======
 Nov 9, 2023
