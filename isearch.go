@@ -23,6 +23,9 @@ const (
 	ansiCursorOn = "\x1B[?25h\x1B[s\x1B[u"
 )
 
+// NewLineMarkForIncrementalSearch is the string used instead of "\n". This variable is not guaranteed to remain valid in the future.
+var NewLineMarkForIncrementalSearch = "\u21B2 "
+
 func (m *Editor) cmdISearchBackward(ctx context.Context, this *readline.Buffer) readline.Result {
 	var searchBuf strings.Builder
 	foundStr := ""
@@ -53,7 +56,8 @@ func (m *Editor) cmdISearchBackward(ctx context.Context, this *readline.Buffer) 
 		}
 	}
 	for {
-		drawStr := fmt.Sprintf("(i-search)[%s]:%s", searchStr, foundStr)
+		drawStr := fmt.Sprintf("(i-search)[%s]:%s", searchStr,
+			strings.ReplaceAll(foundStr, "\n", NewLineMarkForIncrementalSearch))
 		drawWidth := readline.WidthT(0)
 		this.Out.Write([]byte{'\r'})
 		for _, ch := range readline.StringToMoji(drawStr) {
