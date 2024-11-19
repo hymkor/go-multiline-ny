@@ -430,6 +430,7 @@ func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result 
 	return readline.CONTINUE
 }
 
+// fixView calculates the new value of m.headline
 func (m *Editor) fixView() int {
 	if m.csrline >= m.headline+m.viewHeight {
 		m.headline = m.csrline - m.viewHeight + 1
