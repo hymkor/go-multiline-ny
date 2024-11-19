@@ -1,3 +1,5 @@
+- Implement the incremental search
+
 v0.16.4
 =======
 Nov 19, 2024
