@@ -689,7 +689,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.Up, ac(m.CmdPreviousLine))
 	m.LineEditor.BindKey(keys.CtrlM, ac(m.NewLine))
 	m.LineEditor.BindKey(keys.CtrlJ, ac(m.Submit))
-	m.LineEditor.BindKey(keys.CtrlR, readline.SelfInserter(keys.CtrlR))
+	m.LineEditor.BindKey(keys.CtrlR, ac(m.cmdISearchBackward))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 
 	escape := &PrefixCommand{}
