@@ -14,6 +14,7 @@ This is the readline package that supports multiline input and extends [go-readl
 | Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
 | Alt-N or Ctrl-Down | Fetch the next lines-set of the history
 | Ctrl-Y | Paste the string in the clipboard
+| Ctrl-R | Incremental search
 
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
 [^X]: Only WindowsTerminal or Teraterm

@@ -1,4 +1,4 @@
-- Implement the incremental search
+- Implement the incremental search (Ctrl-R)
 
 v0.16.4
 =======
