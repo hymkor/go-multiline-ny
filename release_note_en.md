@@ -1,3 +1,7 @@
+v0.17.0
+=======
+Nov 20, 2024
+
 - Implement the incremental search (Ctrl-R)
 
 v0.16.4
