@@ -704,6 +704,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.Escape, escape)
 	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
 	escape.BindKey("n", ac(m.CmdNextHistory))     // M-n: next
+	escape.BindKey("\r", ac(m.Submit))            // M-Enter: submit
 
 	m.LineEditor.Init()
 	return nil
