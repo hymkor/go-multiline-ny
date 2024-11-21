@@ -579,6 +579,8 @@ func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result 
 
 type PrefixCommand struct {
 	readline.KeyMap
+	m      *Editor
+	prompt string
 }
 
 func (*PrefixCommand) String() string {
@@ -586,7 +588,13 @@ func (*PrefixCommand) String() string {
 }
 
 func (cx *PrefixCommand) Call(ctx context.Context, B *readline.Buffer) readline.Result {
+	rewind := cx.m.GotoEndLine()
+	io.WriteString(B.Out, cx.prompt)
+	io.WriteString(B.Out, "\x1B[?25h")
 	key, err := B.GetKey()
+	fmt.Fprint(B.Out, "\x1B[?25l\x1B[2K")
+	rewind()
+	B.RepaintLastLine()
 	if err != nil {
 		return readline.CONTINUE
 	}
@@ -692,7 +700,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlR, ac(m.cmdISearchBackward))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 
-	escape := &PrefixCommand{}
+	escape := &PrefixCommand{prompt: "M-", m: m}
 	m.LineEditor.BindKey(keys.Escape, escape)
 	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
 	escape.BindKey("n", ac(m.CmdNextHistory))     // M-n: next
