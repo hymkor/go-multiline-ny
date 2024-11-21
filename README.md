@@ -8,7 +8,7 @@ This is the readline package that supports multiline input and extends [go-readl
 | Key | Feature
 |-----|---------
 | Ctrl-M or Enter | Insert a new line[^Y]
-| Ctrl-J(or Ctrl-Enter[^X]) | Submit all lines
+| Ctrl-J/Enter or Escape-Enter | Submit all lines
 | Ctrl-P or Up   | Move cursor to previous line or last line of previous set of inputs in history
 | Ctrl-N or Down | Move cursor to next line or first line of next set of inputs in history
 | Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
@@ -17,7 +17,6 @@ This is the readline package that supports multiline input and extends [go-readl
 | Ctrl-R | Incremental search
 
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
-[^X]: Only WindowsTerminal or Teraterm
 [^Y]: It is possible to give the condition to submit.
 
 [Example](./examples/example.go)
@@ -37,6 +36,7 @@ import (
 
     "github.com/hymkor/go-multiline-ny"
     "github.com/mattn/go-colorable"
+    "github.com/nyaosorg/go-readline-ny"
     "github.com/nyaosorg/go-readline-ny/simplehistory"
 )
 
@@ -45,7 +45,7 @@ func main() {
     fmt.Println("C-m or Enter      : Insert a linefeed")
     fmt.Println("C-p or UP         : Move to the previous line.")
     fmt.Println("C-n or DOWN       : Move to the next line")
-    fmt.Println("C-j               : Submit")
+    fmt.Println("C-j or Esc+Enter  : Submit")
     fmt.Println("C-c               : Abort.")
     fmt.Println("C-D with no chars : Quit.")
     fmt.Println("C-UP   or M-P     : Move to the previous history entry")
@@ -55,6 +55,7 @@ func main() {
     ed.SetPrompt(func(w io.Writer, lnum int) (int, error) {
         return fmt.Fprintf(w, "[%d] ", lnum+1)
     })
+    ed.SetPredictColor(readline.PredictColorBlueItalic)
 
     // To enable escape sequence on Windows.
     // (On other operating systems, it can be ommited)
