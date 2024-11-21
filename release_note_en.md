@@ -1,3 +1,6 @@
+- When prefix key is pressed, echo it
+- Assign Escape → Enter to submit
+
 v0.17.0
 =======
 Nov 20, 2024
