@@ -118,9 +118,16 @@ func (m *Editor) GotoEndLine() func() {
 	}
 	m.LineEditor.Out.Flush()
 	return func() {
-		if lfCount > 0 {
+		if len(m.lines) >= m.viewHeight {
+			io.WriteString(m.LineEditor.Out, "\x1B[1;1H")
+			m.printAfter(m.headline)
+			if lfCount > 1 {
+				fmt.Fprintf(m.LineEditor.Out, "\x1B[%dF", lfCount-1)
+			}
+		} else if lfCount > 0 {
 			fmt.Fprintf(m.LineEditor.Out, "\x1B[%dF", lfCount)
 		}
+		m.LineEditor.Out.Flush()
 	}
 }
 
