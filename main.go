@@ -700,7 +700,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlR, ac(m.cmdISearchBackward))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 
-	escape := &PrefixCommand{prompt: "M-   [Enter] Submit, [Esc] Cancel, [p] Previous, [n] Next\rM-", m: m}
+	escape := &PrefixCommand{prompt: "Esc-   [Enter] Submit, [Esc] Cancel, [p] Previous, [n] Next\rEsc-", m: m}
 	m.LineEditor.BindKey(keys.Escape, escape)
 	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
 	escape.BindKey("n", ac(m.CmdNextHistory))     // M-n: next
