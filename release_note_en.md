@@ -1,4 +1,8 @@
-- When prefix key is pressed, echo it
+v0.18.0
+=======
+Nov 24, 2024
+
+- When prefix key(Escape) is pressed, echo it
 - Assign Escape → Enter to submit
 
 v0.17.0
