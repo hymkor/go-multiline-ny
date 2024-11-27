@@ -1,3 +1,7 @@
+v0.18.1
+=======
+Nov 28, 2024
+
 - Add `NewPrefixCommand` as the constructor of the structure `PrefixCommand`
 
 v0.18.0
