@@ -590,6 +590,13 @@ type PrefixCommand struct {
 	prompt string
 }
 
+func (m *Editor) NewPrefixCommand(prompt string) *PrefixCommand {
+	return &PrefixCommand{
+		prompt: prompt,
+		m:      m,
+	}
+}
+
 func (*PrefixCommand) String() string {
 	return "PREFIX-COMMAND"
 }
@@ -707,7 +714,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlR, ac(m.cmdISearchBackward))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 
-	escape := &PrefixCommand{prompt: "Esc-   [Enter] Submit, [Esc] Cancel, [p] Previous, [n] Next\rEsc-", m: m}
+	escape := m.NewPrefixCommand("Esc-   [Enter] Submit, [Esc] Cancel, [p] Previous, [n] Next\rEsc-")
 	m.LineEditor.BindKey(keys.Escape, escape)
 	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
 	escape.BindKey("n", ac(m.CmdNextHistory))     // M-n: next
