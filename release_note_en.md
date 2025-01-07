@@ -15,7 +15,12 @@ v0.17.0
 =======
 Nov 20, 2024
 
-- Implement the incremental search (Ctrl-R)
+- Implement the incremental search (Ctrl-R) [#4]
+
+Thanks to [@apstndb]
+
+[@apstndb]: https://github.com/apstndb
+[#4]: https://github.com/hymkor/go-multiline-ny/issues/4
 
 v0.16.4
 =======

@@ -15,7 +15,12 @@ v0.17.0
 =======
 Nov 20, 2024
 
-- インクリメンタルサーチ実装 (Ctrl-R)
+- インクリメンタルサーチ実装 (Ctrl-R) [#4]
+
+Thanks to [@apstndb]
+
+[@apstndb]: https://github.com/apstndb
+[#4]: https://github.com/hymkor/go-multiline-ny/issues/4
 
 v0.16.4
 =======
