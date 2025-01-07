@@ -155,7 +155,14 @@ v0.7.2
 ======
 May 6, 2023
 
-- Update go-tty to v0.0.5 for https://github.com/hymkor/go-multiline-ny/issues/1
+- Update [go-tty] to [v0.0.5][go-tty_v0.0.5] for [#1]
+
+Thanks to [@spiegel-im-spiegel]
+
+[@spiegel-im-spiegel]: https://github.com/spiegel-im-spiegel
+[#1]: https://github.com/hymkor/go-multiline-ny/issues/1
+[go-tty]: https://github.com/mattn/go-tty
+[go-tty_v0.0.5]: https://github.com/mattn/go-tty/releases/tag/v0.0.5
 
 v0.7.1
 ======

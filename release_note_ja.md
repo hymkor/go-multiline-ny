@@ -168,11 +168,14 @@ v0.7.2
 =======
 May 6, 2023
 
-- (#1) [Windows以外で桁数と行数が取り違えられる問題][issue-one] を修正するため、[go-tty] を [v0.0.5] へ更新しました。
+- [#1] Windows以外で桁数と行数が取り違えられる問題を修正するため、[go-tty] を [v0.0.5][go-tty_v0.0.5] へ更新しました。
 
-[issue-one]: https://github.com/hymkor/go-multiline-ny/issues/1
+Thanks to [@spiegel-im-spiegel]
+
+[@spiegel-im-spiegel]: https://github.com/spiegel-im-spiegel
+[#1]: https://github.com/hymkor/go-multiline-ny/issues/1
 [go-tty]: https://github.com/mattn/go-tty
-[v0.0.5]: https://github.com/mattn/go-tty/releases/tag/v0.0.5
+[go-tty_v0.0.5]: https://github.com/mattn/go-tty/releases/tag/v0.0.5
 
 v0.7.1
 =======
