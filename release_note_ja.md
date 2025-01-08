@@ -1,3 +1,5 @@
+- go-readline-ny を [v1.6.3](https://github.com/nyaosorg/go-readline-ny/releases/tag/v1.6.3) に更新。このバージョンではデフォルトの色設定が誤って太字に設定されていた問題を修正
+
 v0.18.1
 =======
 Nov 28, 2024
