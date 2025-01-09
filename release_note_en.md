@@ -1,3 +1,7 @@
+v0.18.2
+=======
+Jan 9, 2025
+
 - Updated go-readline-ny dependency to [v1.6.3](https://github.com/nyaosorg/go-readline-ny/releases/tag/v1.6.3), which fixes an issue where the default color setting was incorrectly set to bold.
 
 v0.18.1
