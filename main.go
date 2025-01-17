@@ -35,7 +35,6 @@ type Editor struct {
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
-func (m *Editor) SetColoring(c readline.Coloring)               { m.LineEditor.Coloring = c }
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
@@ -43,6 +42,9 @@ func (m *Editor) SetDefault(d []string)                         { m.defaults = d
 func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = value }
 func (m *Editor) CursorLine() int                               { return m.csrline }
 func (m *Editor) Lines() []string                               { return m.lines }
+
+// Deprecated: set LineEditor.Highlight instead
+func (m *Editor) SetColoring(c readline.Coloring) { m.LineEditor.Coloring = c }
 
 // SubmitOnEnterWhen defines the condition to submit when Enter-key is pressed.
 func (m *Editor) SubmitOnEnterWhen(f func([]string, int) bool) {
