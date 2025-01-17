@@ -1,3 +1,7 @@
+v0.18.3
+=======
+Jan 18, 2025
+
 - go-readline-ny を [v1.7.0](https://github.com/nyaosorg/go-readline-ny/releases/tag/v1.7.0) へ更新。新シンタックスハイライトを採用
 - `(*Editor) SetColoring` を非推奨とした
 

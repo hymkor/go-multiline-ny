@@ -1,3 +1,7 @@
+v0.18.3
+=======
+Jan 18, 2025
+
 - Update go-readline-ny dependency to [v1.7.0](https://github.com/nyaosorg/go-readline-ny/releases/tag/v1.7.0). It introduced a new interface for syntax highlighting.
 - Deprecated `(*Editor) SetColoring`
 
