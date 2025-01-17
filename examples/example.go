@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/hymkor/go-multiline-ny"
@@ -29,6 +30,11 @@ func main() {
 		return fmt.Fprintf(w, "[%d] ", lnum+1)
 	})
 	ed.SetPredictColor(readline.PredictColorBlueItalic)
+	ed.LineEditor.Highlight = []readline.Highlight{
+		{Pattern: regexp.MustCompile(`"[^"]+"`), Sequence: "\x1B[35;49;1m"},
+	}
+	ed.LineEditor.ResetColor = "\x1B[0m"
+	ed.LineEditor.DefaultColor = "\x1B[37;49;1m"
 
 	// To enable escape sequence on Windows.
 	// (On other operating systems, it can be ommited)
