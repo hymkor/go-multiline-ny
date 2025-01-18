@@ -1,3 +1,5 @@
+- Fix a panic caused by incomplete support for the new syntax highlighting in go-readline-ny v1.7
+
 v0.18.3
 =======
 Jan 18, 2025
