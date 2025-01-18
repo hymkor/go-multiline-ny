@@ -361,38 +361,78 @@ func (m *Editor) printOne(i int) {
 
 	w0 := int(readline.GetStringWidth(cutEscapeSequenceAndOldLine(promptStr)))
 	w := w0
-	defaultColor := m.LineEditor.Coloring.Init()
-	color := defaultColor
-	for _, c := range m.lines[i] {
-		newColor := m.LineEditor.Coloring.Next(c)
-		if newColor != color {
-			newColor.WriteTo(m.LineEditor.Out)
+	if coloring := m.LineEditor.Coloring; coloring != nil {
+		defaultColor := coloring.Init()
+		color := defaultColor
+		for _, c := range m.lines[i] {
+			newColor := coloring.Next(c)
+			if newColor != color {
+				newColor.WriteTo(m.LineEditor.Out)
+			}
+			color = newColor
+			if c == '\t' {
+				size := 4 - (w-w0)%4
+				if w+size >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				io.WriteString(m.LineEditor.Out, "    "[:size])
+				w += size
+			} else if c < 0x20 {
+				if w+2 >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
+				w += 2
+			} else {
+				w1 := runewidth.RuneWidth(c)
+				if w+w1 >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				m.LineEditor.Out.WriteRune(c)
+				w += w1
+			}
 		}
-		color = newColor
-		if c == '\t' {
-			size := 4 - (w-w0)%4
-			if w+size >= m.viewWidth-forbiddenWidth {
-				break
-			}
-			io.WriteString(m.LineEditor.Out, "    "[:size])
-			w += size
-		} else if c < 0x20 {
-			if w+2 >= m.viewWidth-forbiddenWidth {
-				break
-			}
-			m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
-			w += 2
-		} else {
-			w1 := runewidth.RuneWidth(c)
-			if w+w1 >= m.viewWidth-forbiddenWidth {
-				break
-			}
-			m.LineEditor.Out.WriteRune(c)
-			w += w1
+		if color != defaultColor {
+			defaultColor.WriteTo(m.LineEditor.Out)
 		}
-	}
-	if color != defaultColor {
-		defaultColor.WriteTo(m.LineEditor.Out)
+	} else {
+		colSeq := highlightToColoring(
+			m.lines[i],
+			m.LineEditor.ResetColor,
+			m.LineEditor.DefaultColor,
+			m.LineEditor.Highlight)
+
+		color := newEscapeSequenceId(m.LineEditor.ResetColor)
+		color.WriteTo(m.LineEditor.Out)
+		for j, c := range m.lines[i] {
+			newColor := colSeq.colorMap[j]
+			if newColor != color {
+				newColor.WriteTo(m.LineEditor.Out)
+			}
+			color = newColor
+			if c == '\t' {
+				size := 4 - (w-w0)%4
+				if w+size >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				io.WriteString(m.LineEditor.Out, "    "[:size])
+				w += size
+			} else if c < 0x20 {
+				if w+2 >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
+				w += 2
+			} else {
+				w1 := runewidth.RuneWidth(c)
+				if w+w1 >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				m.LineEditor.Out.WriteRune(c)
+				w += w1
+			}
+		}
+		io.WriteString(m.LineEditor.Out, m.LineEditor.ResetColor)
 	}
 	io.WriteString(m.LineEditor.Out, "\x1B[K")
 }
