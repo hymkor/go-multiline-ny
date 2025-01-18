@@ -8,10 +8,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hymkor/go-multiline-ny"
 	"github.com/mattn/go-colorable"
+
 	"github.com/nyaosorg/go-readline-ny"
 	"github.com/nyaosorg/go-readline-ny/simplehistory"
+
+	"github.com/hymkor/go-multiline-ny"
 )
 
 func main() {
@@ -30,8 +32,12 @@ func main() {
 		return fmt.Fprintf(w, "[%d] ", lnum+1)
 	})
 	ed.SetPredictColor(readline.PredictColorBlueItalic)
+
 	ed.LineEditor.Highlight = []readline.Highlight{
-		{Pattern: regexp.MustCompile(`"[^"]+"`), Sequence: "\x1B[35;49;1m"},
+		// Double quotation -> Magenta
+		{Pattern: regexp.MustCompile(`"([^"]*\\")*[^"]*$|"([^"]*\\")*[^"]*"`), Sequence: "\x1B[35;49;1m"},
+		// Enviroment variable -> Cyan
+		{Pattern: regexp.MustCompile(`%[^%]*$|%[^%]*%`), Sequence: "\x1B[36;49;1m"},
 	}
 	ed.LineEditor.ResetColor = "\x1B[0m"
 	ed.LineEditor.DefaultColor = "\x1B[37;49;1m"
