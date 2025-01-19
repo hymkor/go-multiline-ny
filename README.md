@@ -61,8 +61,12 @@ func main() {
     ed.SetPredictColor(readline.PredictColorBlueItalic)
 
     ed.LineEditor.Highlight = []readline.Highlight{
+        // Words -> Green
+        {Pattern: regexp.MustCompile(`(?i)(SELECT|INSERT|FROM|WHERE)`), Sequence: "\x1B[32;49;1m"},
         // Double quotation -> Magenta
         {Pattern: regexp.MustCompile(`"([^"]*\\")*[^"]*$|"([^"]*\\")*[^"]*"`), Sequence: "\x1B[35;49;1m"},
+        // Single quotation -> Red
+        {Pattern: regexp.MustCompile(`'([^']*\\')*[^']*$|'([^']*\\')*[^']*'`), Sequence: "\x1B[31;49;1m"},
         // Enviroment variable -> Cyan
         {Pattern: regexp.MustCompile(`%[^%]*$|%[^%]*%`), Sequence: "\x1B[36;49;1m"},
     }
