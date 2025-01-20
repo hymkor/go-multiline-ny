@@ -284,6 +284,7 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 		m.lines = deleteSliceAt(m.lines, m.csrline+1)
 		io.WriteString(b.Out, "\x1B[s")
 		fmt.Fprintln(m.LineEditor.Out)
+		m.Sync(b.String())
 		m.printAfter(m.csrline + 1)
 		io.WriteString(b.Out, "\x1B[u")
 		b.Out.Flush()
@@ -397,13 +398,19 @@ func (m *Editor) printOne(i int) {
 		}
 	} else {
 		colSeq := highlightToColoring(
-			m.lines[i],
+			strings.Join(m.lines, "\n"),
 			m.LineEditor.ResetColor,
 			m.LineEditor.DefaultColor,
 			m.LineEditor.Highlight)
 
 		color := newEscapeSequenceId(m.LineEditor.ResetColor)
+		for p := 0; p < i; p++ {
+			color = colSeq.colorMap[len(m.lines[p])]
+			colSeq.colorMap = colSeq.colorMap[len(m.lines[p])+1:]
+		}
 		color.WriteTo(m.LineEditor.Out)
+		colSeq.colorMap = colSeq.colorMap[:len(m.lines[i])]
+
 		for j, c := range m.lines[i] {
 			newColor := colSeq.colorMap[j]
 			if newColor != color {
@@ -801,6 +808,23 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if m.LineEditor.History != nil {
 		m.historyPtr = m.LineEditor.History.Len()
 	}
+	if len(m.LineEditor.Highlight) > 0 {
+		save := m.LineEditor.AfterCommand
+		// Repaint after each typing
+		m.LineEditor.AfterCommand = func(B *readline.Buffer) {
+			m.Sync(B.String())
+			m.up(m.csrline - m.headline)
+			lfCount := m.printAfter(m.headline)
+			m.up(lfCount - (m.csrline - m.headline))
+			B.RepaintLastLine()
+			if save != nil {
+				save(B)
+			}
+		}
+		defer func() {
+			m.LineEditor.AfterCommand = save
+		}()
+	}
 	for {
 		if m.csrline < len(m.lines) {
 			m.LineEditor.Default = m.lines[m.csrline]
@@ -808,6 +832,14 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			m.LineEditor.Default = ""
 		}
 		m.after = func(string) bool { return true }
+		if len(m.LineEditor.Highlight) > 0 {
+			m.LineEditor.PrefixForColor = strings.Join(m.lines[:m.csrline], "\n") + "\n"
+			if m.csrline+1 < len(m.lines) {
+				m.LineEditor.PostfixForColor = "\n" + strings.Join(m.lines[m.csrline+1:], "\n")
+			} else {
+				m.LineEditor.PostfixForColor = ""
+			}
+		}
 		line, err := m.LineEditor.ReadLine(ctx)
 		if err != nil {
 			m.printAfter(m.csrline)
