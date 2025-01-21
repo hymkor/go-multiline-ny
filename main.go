@@ -397,22 +397,22 @@ func (m *Editor) printOne(i int) {
 			defaultColor.WriteTo(m.LineEditor.Out)
 		}
 	} else {
-		colSeq := highlightToColoring(
+		colSeq := readline.HighlightToColoring(
 			strings.Join(m.lines, "\n"),
 			m.LineEditor.ResetColor,
 			m.LineEditor.DefaultColor,
 			m.LineEditor.Highlight)
 
-		color := newEscapeSequenceId(m.LineEditor.ResetColor)
+		color := readline.NewEscapeSequenceId(m.LineEditor.ResetColor)
 		for p := 0; p < i; p++ {
-			color = colSeq.colorMap[len(m.lines[p])]
-			colSeq.colorMap = colSeq.colorMap[len(m.lines[p])+1:]
+			color = colSeq.ColorMap[len(m.lines[p])]
+			colSeq.ColorMap = colSeq.ColorMap[len(m.lines[p])+1:]
 		}
 		color.WriteTo(m.LineEditor.Out)
-		colSeq.colorMap = colSeq.colorMap[:len(m.lines[i])]
+		colSeq.ColorMap = colSeq.ColorMap[:len(m.lines[i])]
 
 		for j, c := range m.lines[i] {
-			newColor := colSeq.colorMap[j]
+			newColor := colSeq.ColorMap[j]
 			if newColor != color {
 				newColor.WriteTo(m.LineEditor.Out)
 			}
