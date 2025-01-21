@@ -60,18 +60,22 @@ func main() {
     })
     ed.SetPredictColor(readline.PredictColorBlueItalic)
 
-    ed.LineEditor.Highlight = []readline.Highlight{
-        // Words -> Green
-        {Pattern: regexp.MustCompile(`(?i)(SELECT|INSERT|FROM|WHERE)`), Sequence: "\x1B[32;49;1m"},
-        // Double quotation -> Magenta
-        {Pattern: regexp.MustCompile(`"([^"]*\\")*[^"]*$|"([^"]*\\")*[^"]*"`), Sequence: "\x1B[35;49;1m"},
-        // Single quotation -> Red
-        {Pattern: regexp.MustCompile(`'([^']*\\')*[^']*$|'([^']*\\')*[^']*'`), Sequence: "\x1B[31;49;1m"},
-        // Enviroment variable -> Cyan
-        {Pattern: regexp.MustCompile(`%[^%]*$|%[^%]*%`), Sequence: "\x1B[36;49;1m"},
+    ed.Highlight = []readline.Highlight{
+        // Words -> dark green
+        {Pattern: regexp.MustCompile(`(?i)(SELECT|INSERT|FROM|WHERE|AS)`), Sequence: "\x1B[33;49;22m"},
+        // Double quotation -> light magenta
+        {Pattern: regexp.MustCompile(`(?m)"([^"\n]*\\")*[^"\n]*$|"([^"\n]*\\")*[^"\n]*"`), Sequence: "\x1B[32;49;1m"},
+        // Single quotation -> light red
+        {Pattern: regexp.MustCompile(`(?m)'([^'\n]*\\')*[^'\n]*$|'([^'\n]*\\')*[^'\n]*'`), Sequence: "\x1B[31;49;1m"},
+        // Number literal -> light blue
+        {Pattern: regexp.MustCompile(`[0-9]+`), Sequence: "\x1B[34;49;1m"},
+        // Comment -> dark gray
+        {Pattern: regexp.MustCompile(`(?s)/\*.*?\*/`), Sequence: "\x1B[30;49;1m"},
+        // Multiline string literal -> dark red
+        {Pattern: regexp.MustCompile("(?s)```.*?```"), Sequence: "\x1B[31;49;22m"},
     }
-    ed.LineEditor.ResetColor = "\x1B[0m"
-    ed.LineEditor.DefaultColor = "\x1B[37;49;1m"
+    ed.ResetColor = "\x1B[0m"
+    ed.DefaultColor = "\x1B[37;49;1m"
 
     // To enable escape sequence on Windows.
     // (On other operating systems, it can be ommited)
