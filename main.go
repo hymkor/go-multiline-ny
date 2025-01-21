@@ -32,6 +32,7 @@ type Editor struct {
 	modifiedHistoryEntry map[int]string
 	promptLastLineOnly   bool
 	StatusLineHeight     int
+	originalHighlight    []readline.Highlight
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -354,7 +355,7 @@ func (m *Editor) newPrinter() func(i int) {
 		strings.Join(m.lines, "\n"),
 		m.LineEditor.ResetColor,
 		m.LineEditor.DefaultColor,
-		m.LineEditor.Highlight)
+		m.originalHighlight)
 
 	type LineColor struct {
 		maps  []readline.EscapeSequenceId
@@ -767,13 +768,46 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 	return nil
 }
 
+type fixPattern struct {
+	Original interface{ FindAllStringIndex(string, int) [][]int }
+	Prefix   string
+	Postfix  string
+}
+
+func (f *fixPattern) FindAllStringIndex(s string, n int) [][]int {
+	all := f.Prefix + "\n" + s + "\n" + f.Postfix
+	result := [][]int{}
+	for _, r := range f.Original.FindAllStringIndex(all, n) {
+		start := r[0] - len(f.Prefix) - 1
+		end := r[1] - len(f.Prefix) - 1
+		if end < 0 {
+			continue
+		}
+		if start >= len(s) {
+			continue
+		}
+		if start < 0 {
+			start = 0
+		}
+		if end >= len(s) {
+			end = len(s)
+		}
+		if start < end {
+			result = append(result, []int{start, end})
+		}
+	}
+	return result
+}
+
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
-	defer func() {
-		m.promptLastLineOnly = false
-	}()
 	if err := m.init(); err != nil {
 		return nil, err
 	}
+	m.originalHighlight = m.LineEditor.Highlight
+	defer func() {
+		m.promptLastLineOnly = false
+		m.LineEditor.Highlight = m.originalHighlight
+	}()
 
 	m.lines = []string{}
 	m.csrline = 0
@@ -818,13 +852,23 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			m.LineEditor.Default = ""
 		}
 		m.after = func(string) bool { return true }
-		if len(m.LineEditor.Highlight) > 0 {
-			m.LineEditor.PrefixForColor = strings.Join(m.lines[:m.csrline], "\n") + "\n"
+		if len(m.originalHighlight) > 0 {
+			prefix := strings.Join(m.lines[:m.csrline], "\n") + "\n"
+			postfix := ""
 			if m.csrline+1 < len(m.lines) {
-				m.LineEditor.PostfixForColor = "\n" + strings.Join(m.lines[m.csrline+1:], "\n")
-			} else {
-				m.LineEditor.PostfixForColor = ""
+				postfix = "\n" + strings.Join(m.lines[m.csrline+1:], "\n")
 			}
+			newHighlight := make([]readline.Highlight, 0, len(m.originalHighlight))
+			for _, h := range m.originalHighlight {
+				newPattern := &fixPattern{
+					Original: h.Pattern,
+					Prefix:   prefix,
+					Postfix:  postfix,
+				}
+				newHighlight = append(newHighlight,
+					readline.Highlight{Pattern: newPattern, Sequence: h.Sequence})
+			}
+			m.LineEditor.Highlight = newHighlight
 		}
 		line, err := m.LineEditor.ReadLine(ctx)
 		if err != nil {
