@@ -816,7 +816,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	m.csrline = 0
 	m.fixView()
 	m.LineEditor.Cursor = 0
-	if m.defaults != nil && len(m.defaults) > 0 {
+	if len(m.defaults) > 0 {
 		m.lines = append(m.lines, m.defaults...)
 		if m.moveEnd {
 			m.csrline = len(m.lines) - 1
