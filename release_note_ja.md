@@ -1,5 +1,13 @@
 - 行の境界を越える色の変更を可能とするよう、シンタックスハイライトを拡張した。
 - 旧シンタックスハイライト向けフィールド `.LineEditor.Coloring` を参照はするのを停止 (互換性のため、`(*Editor) SetColoring` は存続)
+- ユーザには `Editor.LineEditor.{Hightlight, DefaultColor, ResetColor}` のかわりに、`Editor.{Hightlight, DefaultColor, ResetColor}` を使ってもらうようにした
+
+次のようにフィールドへの代入文を置き換えてください。
+
+- `var ed multiline`
+- `ed.LineEditor.Highlight = ...` → `ed.Highlight = ...`
+- `ed.LineEditor.ResetColor = ...` → `ed.ResetColor = ...`
+- `ed.LineEditor.DefaultColor = ...` → `ed.DefaultColor = ...`
 
 v0.18.4
 =======
