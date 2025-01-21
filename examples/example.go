@@ -33,7 +33,7 @@ func main() {
 	})
 	ed.SetPredictColor(readline.PredictColorBlueItalic)
 
-	ed.LineEditor.Highlight = []readline.Highlight{
+	ed.Highlight = []readline.Highlight{
 		// Words -> Green
 		{Pattern: regexp.MustCompile(`(?i)(SELECT|INSERT|FROM|WHERE)`), Sequence: "\x1B[32;49;1m"},
 		// Double quotation -> Magenta
@@ -44,8 +44,8 @@ func main() {
 		{Pattern: regexp.MustCompile(`(?m)%[^%\n]*$|%[^\n%]*%`), Sequence: "\x1B[36;49;1m"},
 		{Pattern: regexp.MustCompile("(?s)```.*?```"), Sequence: "\x1B[31;49;22m"},
 	}
-	ed.LineEditor.ResetColor = "\x1B[0m"
-	ed.LineEditor.DefaultColor = "\x1B[37;49;1m"
+	ed.ResetColor = "\x1B[0m"
+	ed.DefaultColor = "\x1B[37;49;1m"
 
 	// To enable escape sequence on Windows.
 	// (On other operating systems, it can be ommited)

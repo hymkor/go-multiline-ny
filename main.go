@@ -32,7 +32,9 @@ type Editor struct {
 	modifiedHistoryEntry map[int]string
 	promptLastLineOnly   bool
 	StatusLineHeight     int
-	originalHighlight    []readline.Highlight
+	Highlight            []readline.Highlight
+	ResetColor           string
+	DefaultColor         string
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -353,16 +355,16 @@ func printLastLine(p string, w io.Writer) {
 func (m *Editor) newPrinter() func(i int) {
 	colSeq := readline.HighlightToColoring(
 		strings.Join(m.lines, "\n"),
-		m.LineEditor.ResetColor,
-		m.LineEditor.DefaultColor,
-		m.originalHighlight)
+		m.ResetColor,
+		m.DefaultColor,
+		m.Highlight)
 
 	type LineColor struct {
 		maps  []readline.EscapeSequenceId
 		start readline.EscapeSequenceId
 	}
 	lineColors := []LineColor{}
-	color := readline.NewEscapeSequenceId(m.LineEditor.ResetColor)
+	color := readline.NewEscapeSequenceId(m.ResetColor)
 	colorMap := colSeq.ColorMap
 
 	for i := 0; i < len(m.lines); i++ {
@@ -425,7 +427,7 @@ func (m *Editor) newPrinter() func(i int) {
 				w += w1
 			}
 		}
-		io.WriteString(m.LineEditor.Out, m.LineEditor.ResetColor)
+		io.WriteString(m.LineEditor.Out, m.ResetColor)
 		io.WriteString(m.LineEditor.Out, "\x1B[K")
 	}
 }
@@ -803,11 +805,12 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if err := m.init(); err != nil {
 		return nil, err
 	}
-	m.originalHighlight = m.LineEditor.Highlight
 	defer func() {
 		m.promptLastLineOnly = false
-		m.LineEditor.Highlight = m.originalHighlight
 	}()
+
+	m.LineEditor.ResetColor = m.ResetColor
+	m.LineEditor.DefaultColor = m.DefaultColor
 
 	m.lines = []string{}
 	m.csrline = 0
@@ -828,7 +831,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if m.LineEditor.History != nil {
 		m.historyPtr = m.LineEditor.History.Len()
 	}
-	if len(m.LineEditor.Highlight) > 0 {
+	if len(m.Highlight) > 0 {
 		save := m.LineEditor.AfterCommand
 		// Repaint after each typing
 		m.LineEditor.AfterCommand = func(B *readline.Buffer) {
@@ -852,14 +855,14 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			m.LineEditor.Default = ""
 		}
 		m.after = func(string) bool { return true }
-		if len(m.originalHighlight) > 0 {
+		if len(m.Highlight) > 0 {
 			prefix := strings.Join(m.lines[:m.csrline], "\n") + "\n"
 			postfix := ""
 			if m.csrline+1 < len(m.lines) {
 				postfix = "\n" + strings.Join(m.lines[m.csrline+1:], "\n")
 			}
-			newHighlight := make([]readline.Highlight, 0, len(m.originalHighlight))
-			for _, h := range m.originalHighlight {
+			newHighlight := make([]readline.Highlight, 0, len(m.Highlight))
+			for _, h := range m.Highlight {
 				newPattern := &fixPattern{
 					Original: h.Pattern,
 					Prefix:   prefix,
