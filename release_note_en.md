@@ -1,4 +1,4 @@
-- Enhanced multi-line syntax highlighting to allow color changes across line boundaries.
+- Enhanced multi-line syntax highlighting to allow color changes across line boundaries. [#6]
 - Discontinued support for the field `.LineEditor.Coloring`, which was used for the old syntax highlighting. For compatibility, `(*Editor)` SetColoring remains available
 - To configure highlighting, use `Editor.{Highlight, DefaultColor, ResetColor}` instead of `Editor.LineEditor.{Highlight, DefaultColor, ResetColor}`.
 
@@ -8,6 +8,10 @@ Please update the code to assign values to the fields as shown below:
 - `ed.LineEditor.Highlight = ...` to `ed.Highlight = ...`
 - `ed.LineEditor.ResetColor = ...` to `ed.ResetColor = ...`
 - `ed.LineEditor.DefaultColor = ...` to `ed.DefaultColor = ...`
+
+Thanks to [@apstndb]
+
+[#6]: https://github.com/hymkor/go-multiline-ny/issues/6
 
 v0.18.4
 =======

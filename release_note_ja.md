@@ -1,4 +1,4 @@
-- 行の境界を越える色の変更を可能とするよう、シンタックスハイライトを拡張した。
+- 行の境界を越える色の変更を可能とするよう、シンタックスハイライトを拡張した [#6]
 - 旧シンタックスハイライト向けフィールド `.LineEditor.Coloring` を参照はするのを停止 (互換性のため、`(*Editor) SetColoring` は存続)
 - ユーザには `Editor.LineEditor.{Hightlight, DefaultColor, ResetColor}` のかわりに、`Editor.{Hightlight, DefaultColor, ResetColor}` を使ってもらうようにした
 
@@ -8,6 +8,10 @@
 - `ed.LineEditor.Highlight = ...` → `ed.Highlight = ...`
 - `ed.LineEditor.ResetColor = ...` → `ed.ResetColor = ...`
 - `ed.LineEditor.DefaultColor = ...` → `ed.DefaultColor = ...`
+
+Thanks to [@apstndb]
+
+[#6]: https://github.com/hymkor/go-multiline-ny/issues/6
 
 v0.18.4
 =======
