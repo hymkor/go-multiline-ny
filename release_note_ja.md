@@ -1,3 +1,7 @@
+v0.19.0
+=======
+Jan 22, 2025
+
 - 行の境界を越える色の変更を可能とするよう、シンタックスハイライトを拡張した [#6]
 - 旧シンタックスハイライト向けフィールド `.LineEditor.Coloring` を参照はするのを停止 (互換性のため、`(*Editor) SetColoring` は存続)
 - ユーザには `Editor.LineEditor.{Hightlight, DefaultColor, ResetColor}` のかわりに、`Editor.{Hightlight, DefaultColor, ResetColor}` を使ってもらうようにした
