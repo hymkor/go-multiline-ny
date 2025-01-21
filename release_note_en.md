@@ -1,3 +1,6 @@
+- Enhanced multi-line syntax highlighting to allow color changes across line boundaries.
+- Discontinued support for the field `.LineEditor.Coloring`, which was used for the old syntax highlighting. For compatibility, `(*Editor)` SetColoring remains available
+
 v0.18.4
 =======
 Jan 19, 2025
