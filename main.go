@@ -349,63 +349,84 @@ func printLastLine(p string, w io.Writer) {
 	}
 }
 
-func (m *Editor) printOne(i int) {
-	var buffer strings.Builder
-	m.prompt(&buffer, i)
-	promptStr := buffer.String()
-	if i != 0 || m.promptLastLineOnly {
-		printLastLine(promptStr, m.LineEditor.Out)
-	} else {
-		io.WriteString(m.LineEditor.Out, promptStr)
-	}
-	m.promptLastLineOnly = true
-
-	w0 := int(readline.GetStringWidth(cutEscapeSequenceAndOldLine(promptStr)))
-	w := w0
+func (m *Editor) newPrinter() func(i int) {
 	colSeq := readline.HighlightToColoring(
 		strings.Join(m.lines, "\n"),
 		m.LineEditor.ResetColor,
 		m.LineEditor.DefaultColor,
 		m.LineEditor.Highlight)
 
+	type LineColor struct {
+		maps  []readline.EscapeSequenceId
+		start readline.EscapeSequenceId
+	}
+	lineColors := []LineColor{}
 	color := readline.NewEscapeSequenceId(m.LineEditor.ResetColor)
-	for p := 0; p < i; p++ {
-		color = colSeq.ColorMap[len(m.lines[p])]
-		colSeq.ColorMap = colSeq.ColorMap[len(m.lines[p])+1:]
-	}
-	color.WriteTo(m.LineEditor.Out)
-	colSeq.ColorMap = colSeq.ColorMap[:len(m.lines[i])]
+	colorMap := colSeq.ColorMap
 
-	for j, c := range m.lines[i] {
-		newColor := colSeq.ColorMap[j]
-		if newColor != color {
-			newColor.WriteTo(m.LineEditor.Out)
+	for i := 0; i < len(m.lines); i++ {
+		lineColor1 := LineColor{
+			maps:  colorMap[:len(m.lines[i])],
+			start: color,
 		}
-		color = newColor
-		if c == '\t' {
-			size := 4 - (w-w0)%4
-			if w+size >= m.viewWidth-forbiddenWidth {
-				break
-			}
-			io.WriteString(m.LineEditor.Out, "    "[:size])
-			w += size
-		} else if c < 0x20 {
-			if w+2 >= m.viewWidth-forbiddenWidth {
-				break
-			}
-			m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
-			w += 2
-		} else {
-			w1 := runewidth.RuneWidth(c)
-			if w+w1 >= m.viewWidth-forbiddenWidth {
-				break
-			}
-			m.LineEditor.Out.WriteRune(c)
-			w += w1
+		lineColors = append(lineColors, lineColor1)
+
+		if len(m.lines[i]) >= len(colorMap) {
+			break
 		}
+		color = colorMap[len(m.lines[i])]
+		colorMap = colorMap[len(m.lines[i])+1:]
 	}
-	io.WriteString(m.LineEditor.Out, m.LineEditor.ResetColor)
-	io.WriteString(m.LineEditor.Out, "\x1B[K")
+
+	return func(i int) {
+		var buffer strings.Builder
+		m.prompt(&buffer, i)
+		promptStr := buffer.String()
+		if i != 0 || m.promptLastLineOnly {
+			printLastLine(promptStr, m.LineEditor.Out)
+		} else {
+			io.WriteString(m.LineEditor.Out, promptStr)
+		}
+		m.promptLastLineOnly = true
+
+		w0 := int(readline.GetStringWidth(cutEscapeSequenceAndOldLine(promptStr)))
+		w := w0
+
+		color := lineColors[i].start
+		colorMap := lineColors[i].maps
+		color.WriteTo(m.LineEditor.Out)
+
+		for j, c := range m.lines[i] {
+			newColor := colorMap[j]
+			if newColor != color {
+				newColor.WriteTo(m.LineEditor.Out)
+			}
+			color = newColor
+			if c == '\t' {
+				size := 4 - (w-w0)%4
+				if w+size >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				io.WriteString(m.LineEditor.Out, "    "[:size])
+				w += size
+			} else if c < 0x20 {
+				if w+2 >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				m.LineEditor.Out.Write([]byte{'^', '@' + byte(c)})
+				w += 2
+			} else {
+				w1 := runewidth.RuneWidth(c)
+				if w+w1 >= m.viewWidth-forbiddenWidth {
+					break
+				}
+				m.LineEditor.Out.WriteRune(c)
+				w += w1
+			}
+		}
+		io.WriteString(m.LineEditor.Out, m.LineEditor.ResetColor)
+		io.WriteString(m.LineEditor.Out, "\x1B[K")
+	}
 }
 
 // printAfter prints lines[i:j].
@@ -418,8 +439,9 @@ func (m *Editor) printFromTo(i, j int) int {
 	}
 	if i < j {
 		m.LineEditor.Out.WriteByte('\r')
+		printOne := m.newPrinter()
 		for {
-			m.printOne(i)
+			printOne(i)
 			i++
 			if i >= j {
 				break
