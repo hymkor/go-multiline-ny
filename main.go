@@ -771,12 +771,17 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 }
 
 type fixPattern struct {
-	Original interface{ FindAllStringIndex(string, int) [][]int }
-	Prefix   string
-	Postfix  string
+	Original    interface{ FindAllStringIndex(string, int) [][]int }
+	Prefix      string
+	Postfix     string
+	cacheSource string
+	cacheResult [][]int
 }
 
 func (f *fixPattern) FindAllStringIndex(s string, n int) [][]int {
+	if f.cacheSource == s {
+		return f.cacheResult
+	}
 	all := f.Prefix + "\n" + s + "\n" + f.Postfix
 	result := [][]int{}
 	for _, r := range f.Original.FindAllStringIndex(all, n) {
@@ -798,6 +803,8 @@ func (f *fixPattern) FindAllStringIndex(s string, n int) [][]int {
 			result = append(result, []int{start, end})
 		}
 	}
+	f.cacheSource = s
+	f.cacheResult = result
 	return result
 }
 
