@@ -104,7 +104,7 @@ func (m *Editor) CmdPreviousLine(ctx context.Context, rl *readline.Buffer) readl
 	m.after = func(line string) bool {
 		m.Sync(line)
 		m.csrline--
-		if m.fixView() < 0 {
+		if m.adjustHeadline() < 0 {
 			m.up(m.printAfter(m.csrline))
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\x1B[1F")
@@ -163,7 +163,7 @@ func (m *Editor) CmdNextLine(ctx context.Context, rl *readline.Buffer) readline.
 	m.after = func(line string) bool {
 		m.Sync(line)
 		m.csrline++
-		if m.fixView() > 0 {
+		if m.adjustHeadline() > 0 {
 			m.up(m.csrline - m.headline)
 			m.printAfter(m.headline)
 		} else {
@@ -184,7 +184,7 @@ func (m *Editor) CmdBackwardChar(ctx context.Context, b *readline.Buffer) readli
 	m.after = func(line string) bool {
 		m.Sync(line)
 		m.csrline--
-		if m.fixView() < 0 {
+		if m.adjustHeadline() < 0 {
 			m.up(m.printAfter(m.csrline))
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\x1B[1F")
@@ -207,7 +207,7 @@ func (m *Editor) CmdForwardChar(ctx context.Context, b *readline.Buffer) readlin
 		m.Sync(line)
 		m.csrline++
 		m.LineEditor.Cursor = 0
-		if m.fixView() > 0 {
+		if m.adjustHeadline() > 0 {
 			m.up(m.csrline - m.headline)
 			m.printAfter(m.headline)
 		} else {
@@ -228,7 +228,7 @@ func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) 
 	m.after = func(line string) bool {
 		if m.csrline > 0 {
 			m.csrline--
-			m.fixView()
+			m.adjustHeadline()
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 			m.lines[m.csrline] = m.lines[m.csrline] + line
 			m.Dirty = true
@@ -264,7 +264,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 		m.Sync(line)
 		m.LineEditor.Cursor = 0
 		m.csrline++
-		m.fixView()
+		m.adjustHeadline()
 		m.up(m.printAfter(m.csrline))
 		return true
 	}
@@ -487,8 +487,8 @@ func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result 
 	return readline.CONTINUE
 }
 
-// fixView calculates the new value of m.headline
-func (m *Editor) fixView() int {
+// adjustHeadline calculates the new value of m.headline
+func (m *Editor) adjustHeadline() int {
 	if m.csrline >= m.headline+m.viewHeight {
 		m.headline = m.csrline - m.viewHeight + 1
 		return +1
@@ -513,7 +513,7 @@ func (m *Editor) _printCurrentHistoryRecord(tail bool) {
 	} else {
 		m.csrline = len(m.lines) - 1
 	}
-	m.fixView()
+	m.adjustHeadline()
 	lfCount := m.printAfter(m.headline)
 	lfCount -= (m.csrline - m.headline)
 	m.up(lfCount)
@@ -620,12 +620,12 @@ func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result 
 		m.Sync(line)
 		fmt.Fprintln(m.LineEditor.Out)
 		m.csrline++
-		m.fixView()
+		m.adjustHeadline()
 
 		m.lines = insertSliceAt(m.lines, m.csrline, newlines)
 		start := m.csrline
 		m.csrline += len(newlines) - 1
-		m.fixView()
+		m.adjustHeadline()
 		m.printAfter(start)
 		m.up(min(len(m.lines), m.headline+m.viewHeight) - m.csrline - 1)
 		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline]) - nextCursorPosition
@@ -826,13 +826,13 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 
 	m.lines = []string{}
 	m.csrline = 0
-	m.fixView()
+	m.adjustHeadline()
 	m.LineEditor.Cursor = 0
 	if len(m.defaults) > 0 {
 		m.lines = append(m.lines, m.defaults...)
 		if m.moveEnd {
 			m.csrline = len(m.lines) - 1
-			m.fixView()
+			m.adjustHeadline()
 			m.printAfter(m.headline)
 			m.LineEditor.Out.WriteByte('\r')
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
