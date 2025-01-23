@@ -50,7 +50,7 @@ func (m *Editor) CursorLine() int                               { return m.csrli
 func (m *Editor) Lines() []string                               { return m.lines }
 
 // Deprecated: set LineEditor.Highlight instead
-func (m *Editor) SetColoring(c readline.Coloring) { m.LineEditor.Coloring = c }
+func (m *Editor) SetColoring(c interface{}) {}
 
 // SubmitOnEnterWhen defines the condition to submit when Enter-key is pressed.
 func (m *Editor) SubmitOnEnterWhen(f func([]string, int) bool) {
