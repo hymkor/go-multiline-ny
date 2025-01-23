@@ -782,13 +782,13 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 	return nil
 }
 
-type fixPattern struct {
+type spanPattern struct {
 	Original interface{ FindAllStringIndex(string, int) [][]int }
 	Prefix   string
 	Postfix  string
 }
 
-func (f *fixPattern) FindAllStringIndex(s string, n int) [][]int {
+func (f *spanPattern) FindAllStringIndex(s string, n int) [][]int {
 	all := f.Prefix + "\n" + s + "\n" + f.Postfix
 	result := [][]int{}
 	for _, r := range f.Original.FindAllStringIndex(all, n) {
@@ -875,7 +875,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 			}
 			newHighlight := make([]readline.Highlight, 0, len(m.Highlight))
 			for _, h := range m.Highlight {
-				newPattern := &fixPattern{
+				newPattern := &spanPattern{
 					Original: h.Pattern,
 					Prefix:   prefix,
 					Postfix:  postfix,
