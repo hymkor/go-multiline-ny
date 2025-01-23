@@ -35,6 +35,9 @@ type Editor struct {
 	Highlight            []readline.Highlight
 	ResetColor           string
 	DefaultColor         string
+
+	memoHighlightSource string
+	memoHighlightResult *readline.HighlightColorSequence
 }
 
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
@@ -353,11 +356,20 @@ func printLastLine(p string, w io.Writer) {
 }
 
 func (m *Editor) newPrinter() func(i int) {
-	colSeq := readline.HighlightToColoring(
-		strings.Join(m.lines, "\n"),
-		m.ResetColor,
-		m.DefaultColor,
-		m.Highlight)
+	var colSeq *readline.HighlightColorSequence
+	src := strings.Join(m.lines, "\n")
+
+	if src == m.memoHighlightSource && m.memoHighlightResult != nil {
+		colSeq = m.memoHighlightResult
+	} else {
+		colSeq = readline.HighlightToColoring(
+			src,
+			m.ResetColor,
+			m.DefaultColor,
+			m.Highlight)
+		m.memoHighlightSource = src
+		m.memoHighlightResult = colSeq
+	}
 
 	type LineColor struct {
 		maps  []readline.EscapeSequenceId
