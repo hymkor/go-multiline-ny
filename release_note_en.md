@@ -1,3 +1,7 @@
+v0.19.1
+=======
+Jan 23, 2025
+
 - Updated the dependency of go-readline-ny to v1.7.3 that improves processing time when the syntax highlighting evaluation function is slow by reducing the number of its calls
 
 v0.19.0
