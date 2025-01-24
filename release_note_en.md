@@ -1,3 +1,7 @@
+v0.19.2
+=======
+Jan 25, 2025
+
 - Slightly reduced the number of calls to the pattern matching function for syntax highlighting
 
 v0.19.1
