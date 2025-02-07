@@ -288,12 +288,11 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 		b.InsertString(b.Cursor, m.lines[m.csrline+1])
 		b.RepaintAfterPrompt()
 		m.lines = deleteSliceAt(m.lines, m.csrline+1)
-		io.WriteString(b.Out, "\x1B[s")
 		fmt.Fprintln(m.LineEditor.Out)
 		m.Sync(b.String())
-		m.printAfter(m.csrline + 1)
-		io.WriteString(b.Out, "\x1B[u")
-		b.Out.Flush()
+		lfCount := m.printAfter(m.csrline + 1)
+		m.up(lfCount + 1)
+		b.RepaintLastLine()
 	}
 	return readline.CONTINUE
 }
