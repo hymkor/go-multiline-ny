@@ -235,9 +235,9 @@ func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) 
 			if m.csrline+1 < len(m.lines) {
 				m.lines = deleteSliceAt(m.lines, m.csrline+1)
 			}
-			io.WriteString(m.LineEditor.Out, "\x1B[A\r\x1B[s")
-			m.printAfter(m.csrline)
-			io.WriteString(m.LineEditor.Out, "\x1B[u")
+			io.WriteString(m.LineEditor.Out, "\r")
+			lfCount := m.printAfter(m.csrline + 1)
+			m.up(lfCount + 1)
 		}
 		return true
 	}
