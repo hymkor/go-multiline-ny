@@ -1,3 +1,10 @@
+- macOS の JetBrains IDE Terminal 対応のため、行連結時とヒストリ参照時に、カーソル位置保存(`ESC[s`)、復元(`ESC[u`)、カーソル以降行削除(`ESC[J`) を使わないようにした。[#7],[IJPL-60199]
+
+Thanks to [@apstndb]
+
+[#7]: https://github.com/hymkor/go-multiline-ny/issues/7
+[IJPL-60199]: https://youtrack.jetbrains.com/issue/IJPL-60199/Console-doesnt-support-ANSI-escape-code-for-clearing
+
 v0.19.2
 =======
 Jan 25, 2025

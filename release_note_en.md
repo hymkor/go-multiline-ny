@@ -1,3 +1,10 @@
+- Avoid using `ESC[s` (which saves the cursor position), `ESC[u` (which restores the cursor position), and `ESC[J` (which clears lines after the cursor) when concatenating lines or referencing the history to support the macOS version of JetBrains IDE Terminal. [#7],[IJPL-60199]
+
+Thanks to [@apstndb]
+
+[#7]: https://github.com/hymkor/go-multiline-ny/issues/7
+[IJPL-60199]: https://youtrack.jetbrains.com/issue/IJPL-60199/Console-doesnt-support-ANSI-escape-code-for-clearing
+
 v0.19.2
 =======
 Jan 25, 2025
