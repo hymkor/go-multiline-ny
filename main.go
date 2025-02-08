@@ -523,7 +523,13 @@ func (m *Editor) adjustHeadline() int {
 
 func (m *Editor) _printCurrentHistoryRecord(tail bool) {
 	// clear
-	m.up(m.csrline - m.headline)
+	end := min(len(m.lines), m.headline+m.viewHeight) - 1
+	if end > m.csrline {
+		fmt.Fprintf(m.LineEditor.Out, "\x1B[%dE", end-m.csrline)
+	}
+	for i := end; i > m.headline; i-- {
+		io.WriteString(m.LineEditor.Out, "\x1B[2K\x1B[F")
+	}
 	if value, ok := m.modifiedHistoryEntry[m.historyPtr]; ok {
 		m.lines = strings.Split(value, "\n")
 	} else if h := m.LineEditor.History; m.historyPtr < h.Len() {
