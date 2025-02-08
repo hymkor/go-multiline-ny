@@ -218,6 +218,24 @@ func (m *Editor) CmdForwardChar(ctx context.Context, b *readline.Buffer) readlin
 	return readline.ENTER
 }
 
+// clearAfterPrintAfter is the function instead of `\x1B[J`
+// for the JetBrains IDE terminal
+func (m *Editor) clearAfterPrintAfter() {
+	if len(m.lines) < m.headline+m.viewHeight {
+		// Cursor line is last line
+		if m.csrline == len(m.lines)-1 {
+			io.WriteString(m.LineEditor.Out, "\r\x1B[K")
+			m.LineEditor.Out.Flush()
+		} else {
+			// Cursor line is not last line
+			io.WriteString(m.LineEditor.Out, "\n\x1B[K")
+			m.LineEditor.Out.Flush()
+			io.WriteString(m.LineEditor.Out, "\x1B[A")
+			m.LineEditor.Out.Flush()
+		}
+	}
+}
+
 func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) readline.Result {
 	if b.Cursor > 0 {
 		return readline.CmdBackwardDeleteChar.Call(ctx, b)
@@ -237,6 +255,7 @@ func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) 
 			}
 			io.WriteString(m.LineEditor.Out, "\r")
 			lfCount := m.printAfter(m.csrline + 1)
+			m.clearAfterPrintAfter()
 			m.up(lfCount + 1)
 		}
 		return true
@@ -291,6 +310,7 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 		fmt.Fprintln(m.LineEditor.Out)
 		m.Sync(b.String())
 		lfCount := m.printAfter(m.csrline + 1)
+		m.clearAfterPrintAfter()
 		m.up(lfCount + 1)
 		b.RepaintLastLine()
 	}
@@ -472,7 +492,10 @@ func (m *Editor) printFromTo(i, j int) int {
 // It does not fix view.
 func (m *Editor) printAfter(i int) int {
 	lfCount := m.printFromTo(i, len(m.lines))
-	io.WriteString(m.LineEditor.Out, "\x1B[J\r")
+	/* The macOS version of JetBrains IDE terminal
+	 * does not support `ESC[J` without `\n` (#7) */
+	// io.WriteString(m.LineEditor.Out, "\x1B[J\r")
+	io.WriteString(m.LineEditor.Out, "\r")
 	m.LineEditor.Out.Flush()
 	return lfCount
 }
