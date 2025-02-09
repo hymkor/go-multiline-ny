@@ -9,7 +9,6 @@ import (
 
 	"golang.org/x/term"
 
-	"github.com/atotto/clipboard"
 	"github.com/mattn/go-runewidth"
 
 	"github.com/nyaosorg/go-readline-ny"
@@ -617,7 +616,7 @@ func min(i, j int) int {
 }
 
 func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result {
-	text, err := clipboard.ReadAll()
+	text, err := m.LineEditor.Clipboard.Read()
 	if err != nil {
 		return readline.CONTINUE
 	}
