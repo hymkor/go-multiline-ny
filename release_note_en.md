@@ -1,3 +1,7 @@
+v0.20.1
+=======
+Feb. 9, 2025
+
 - Use the Clipboard of `go-readline-ny.Editor` instead of the operating system’s clipboard.
 
 v0.20.0
