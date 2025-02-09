@@ -1,5 +1,4 @@
 //go:build run
-// +build run
 
 package main
 
@@ -10,10 +9,23 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hymkor/go-multiline-ny"
+	"github.com/atotto/clipboard"
 	"github.com/mattn/go-colorable"
+
 	"github.com/nyaosorg/go-readline-ny/simplehistory"
+
+	"github.com/hymkor/go-multiline-ny"
 )
+
+type OSClipboard struct{}
+
+func (OSClipboard) Read() (string, error) {
+	return clipboard.ReadAll()
+}
+
+func (OSClipboard) Write(s string) error {
+	return clipboard.WriteAll(s)
+}
 
 func main() {
 	ctx := context.Background()
@@ -35,6 +47,9 @@ func main() {
 	// To enable escape sequence on Windows.
 	// (On other operating systems, it can be ommited)
 	ed.SetWriter(colorable.NewColorableStdout())
+
+	// Use the clipboard of the operating system.
+	ed.LineEditor.Clipboard = OSClipboard{}
 
 	history := simplehistory.New()
 	ed.SetHistory(history)
