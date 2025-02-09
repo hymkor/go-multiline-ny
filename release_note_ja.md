@@ -1,3 +1,7 @@
+v0.20.0
+=======
+Feb 9, 2025
+
 - macOS の JetBrains IDE Terminal 対応のため、行連結時とヒストリ参照時に、カーソル位置保存(`ESC[s`)、復元(`ESC[u`)、カーソル以降行削除(`ESC[J`) を使わないようにした。[#7],[IJPL-60199]
 
 Thanks to [@apstndb]

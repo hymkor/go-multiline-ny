@@ -1,3 +1,7 @@
+v0.20.0
+=======
+Feb 9, 2025
+
 - Avoid using `ESC[s` (which saves the cursor position), `ESC[u` (which restores the cursor position), and `ESC[J` (which clears lines after the cursor) when concatenating lines or referencing the history to support the macOS version of JetBrains IDE Terminal. [#7],[IJPL-60199]
 
 Thanks to [@apstndb]
