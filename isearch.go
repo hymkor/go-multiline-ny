@@ -91,7 +91,7 @@ func (m *Editor) cmdISearchBackward(ctx context.Context, this *readline.Buffer) 
 			update()
 		case "\r":
 			m.after = func(string) bool {
-				m.up(m.csrline - m.headline)
+				m.clearLines()
 				m.lines = strings.Split(foundStr, "\n")
 				m.csrline = len(m.lines) - 1
 				m.adjustHeadline()
