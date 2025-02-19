@@ -1,3 +1,7 @@
+v0.20.2
+=======
+Feb 19, 2025
+
 - Fixed an issue where parts of the previous lines were sometimes not erased during inc
 remental search.(#7)
 
