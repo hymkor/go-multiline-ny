@@ -1,6 +1,9 @@
+- Fixed an issue where parts of the previous lines were sometimes not erased during inc
+remental search.(#7)
+
 v0.20.1
 =======
-Feb. 9, 2025
+Feb 9, 2025
 
 - Use the Clipboard of `go-readline-ny.Editor` instead of the operating system’s clipboard.
 
