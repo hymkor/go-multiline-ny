@@ -186,3 +186,8 @@ Acknowledgements
 
 - [spiegel-im-spiegel (Spiegel)](https://github.com/spiegel-im-spiegel)
 - [apstndb](https://github.com/apstndb)
+
+Author
+------
+
+- [hymkor (HAYAMA Kaoru)](https://github.com/hymkor)
