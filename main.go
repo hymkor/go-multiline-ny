@@ -104,7 +104,7 @@ func (m *Editor) CmdPreviousLine(ctx context.Context, rl *readline.Buffer) readl
 		m.Sync(line)
 		m.csrline--
 		if m.adjustHeadline() < 0 {
-			m.up(m.printAfter(m.csrline))
+			m.up(m.PrintFromLine(m.csrline))
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\x1B[1F")
 		}
@@ -127,7 +127,7 @@ func (m *Editor) GotoEndLine() func() {
 	return func() {
 		if len(m.lines) >= m.viewHeight {
 			io.WriteString(m.LineEditor.Out, "\x1B[1;1H")
-			m.printAfter(m.headline)
+			m.PrintFromLine(m.headline)
 			if lfCount > 1 {
 				fmt.Fprintf(m.LineEditor.Out, "\x1B[%dF", lfCount-1)
 			}
@@ -164,7 +164,7 @@ func (m *Editor) CmdNextLine(ctx context.Context, rl *readline.Buffer) readline.
 		m.csrline++
 		if m.adjustHeadline() > 0 {
 			m.up(m.csrline - m.headline)
-			m.printAfter(m.headline)
+			m.PrintFromLine(m.headline)
 		} else {
 			fmt.Fprintln(m.LineEditor.Out)
 		}
@@ -184,7 +184,7 @@ func (m *Editor) CmdBackwardChar(ctx context.Context, b *readline.Buffer) readli
 		m.Sync(line)
 		m.csrline--
 		if m.adjustHeadline() < 0 {
-			m.up(m.printAfter(m.csrline))
+			m.up(m.PrintFromLine(m.csrline))
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\x1B[1F")
 		}
@@ -208,7 +208,7 @@ func (m *Editor) CmdForwardChar(ctx context.Context, b *readline.Buffer) readlin
 		m.LineEditor.Cursor = 0
 		if m.adjustHeadline() > 0 {
 			m.up(m.csrline - m.headline)
-			m.printAfter(m.headline)
+			m.PrintFromLine(m.headline)
 		} else {
 			fmt.Fprint(m.LineEditor.Out, "\n")
 		}
@@ -253,7 +253,7 @@ func (m *Editor) CmdBackwardDeleteChar(ctx context.Context, b *readline.Buffer) 
 				m.lines = deleteSliceAt(m.lines, m.csrline+1)
 			}
 			io.WriteString(m.LineEditor.Out, "\r")
-			lfCount := m.printAfter(m.csrline + 1)
+			lfCount := m.PrintFromLine(m.csrline + 1)
 			m.clearAfterPrintAfter()
 			m.up(lfCount + 1)
 		}
@@ -283,7 +283,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 		m.LineEditor.Cursor = 0
 		m.csrline++
 		m.adjustHeadline()
-		m.up(m.printAfter(m.csrline))
+		m.up(m.PrintFromLine(m.csrline))
 		return true
 	}
 	return readline.ENTER
@@ -308,7 +308,7 @@ func (m *Editor) CmdDeleteChar(ctx context.Context, b *readline.Buffer) readline
 		m.lines = deleteSliceAt(m.lines, m.csrline+1)
 		fmt.Fprintln(m.LineEditor.Out)
 		m.Sync(b.String())
-		lfCount := m.printAfter(m.csrline + 1)
+		lfCount := m.PrintFromLine(m.csrline + 1)
 		m.clearAfterPrintAfter()
 		m.up(lfCount + 1)
 		b.RepaintLastLine()
@@ -486,10 +486,10 @@ func (m *Editor) printFromTo(i, j int) int {
 	return lfCount
 }
 
-// printAfter prints lines[i:].
+// PrintFromLine prints lines[i:].
 // `headline` must be corrected.
 // It does not fix view.
-func (m *Editor) printAfter(i int) int {
+func (m *Editor) PrintFromLine(i int) int {
 	lfCount := m.printFromTo(i, len(m.lines))
 	/* The macOS version of JetBrains IDE terminal
 	 * does not support `ESC[J` without `\n` (#7) */
@@ -501,7 +501,7 @@ func (m *Editor) printAfter(i int) int {
 
 func (m *Editor) repaint(_ context.Context, b *readline.Buffer) readline.Result {
 	io.WriteString(m.LineEditor.Out, "\x1B[1;1H\x1B[2J")
-	lfCount := m.printAfter(m.headline)
+	lfCount := m.PrintFromLine(m.headline)
 	lfCount -= (m.csrline - m.headline)
 	m.up(lfCount)
 	b.RepaintAll()
@@ -545,7 +545,7 @@ func (m *Editor) _printCurrentHistoryRecord(tail bool) {
 		m.csrline = len(m.lines) - 1
 	}
 	m.adjustHeadline()
-	lfCount := m.printAfter(m.headline)
+	lfCount := m.PrintFromLine(m.headline)
 	lfCount -= (m.csrline - m.headline)
 	m.up(lfCount)
 	m.LineEditor.Cursor = 9999
@@ -657,7 +657,7 @@ func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result 
 		start := m.csrline
 		m.csrline += len(newlines) - 1
 		m.adjustHeadline()
-		m.printAfter(start)
+		m.PrintFromLine(start)
 		m.up(min(len(m.lines), m.headline+m.viewHeight) - m.csrline - 1)
 		m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline]) - nextCursorPosition
 		return true
@@ -861,11 +861,11 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 		if m.moveEnd {
 			m.csrline = len(m.lines) - 1
 			m.adjustHeadline()
-			m.printAfter(m.headline)
+			m.PrintFromLine(m.headline)
 			m.LineEditor.Out.WriteByte('\r')
 			m.LineEditor.Cursor = readline.MojiCountInString(m.lines[m.csrline])
 		} else {
-			m.up(m.printAfter(0))
+			m.up(m.PrintFromLine(0))
 		}
 	}
 	if m.LineEditor.History != nil {
@@ -877,7 +877,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 		m.LineEditor.AfterCommand = func(B *readline.Buffer) {
 			m.Sync(B.String())
 			m.up(m.csrline - m.headline)
-			lfCount := m.printAfter(m.headline)
+			lfCount := m.PrintFromLine(m.headline)
 			m.up(lfCount - (m.csrline - m.headline))
 			B.RepaintLastLine()
 			if save != nil {
@@ -915,7 +915,7 @@ func (m *Editor) Read(ctx context.Context) ([]string, error) {
 		}
 		line, err := m.LineEditor.ReadLine(ctx)
 		if err != nil {
-			m.printAfter(m.csrline)
+			m.PrintFromLine(m.csrline)
 			m.LineEditor.Out.WriteByte('\n')
 			m.LineEditor.Out.Flush()
 			return nil, err

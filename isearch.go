@@ -95,7 +95,7 @@ func (m *Editor) cmdISearchBackward(ctx context.Context, this *readline.Buffer) 
 				m.lines = strings.Split(foundStr, "\n")
 				m.csrline = len(m.lines) - 1
 				m.adjustHeadline()
-				lfCount := m.printAfter(m.headline)
+				lfCount := m.PrintFromLine(m.headline)
 				lfCount -= (m.csrline - m.headline)
 				m.up(lfCount)
 				m.LineEditor.Cursor = 9999
