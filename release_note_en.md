@@ -1,3 +1,7 @@
+- (#8,#9) Unified behavior to avoid line breaks at end of single-line input; fixed display corruption on Ctrl-D (EOF)
+
+Thanks to @apstndb
+
 v0.20.2
 =======
 Feb 19, 2025
