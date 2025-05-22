@@ -174,14 +174,15 @@ func main() {
 }
 ```
 
-Acknowledgements
-----------------
-
-- [@spiegel-im-spiegel](https://github.com/spiegel-im-spiegel)
-- [@apstndb](https://github.com/apstndb)
 
 Release notes
 -------------
 
 - [Release notes (English)](./release_note_en.md)
 - [Release notes (Japanese)](./release_note_ja.md)
+
+Acknowledgements
+----------------
+
+- [spiegel-im-spiegel (Spiegel)](https://github.com/spiegel-im-spiegel)
+- [apstndb](https://github.com/apstndb)
