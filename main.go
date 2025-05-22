@@ -808,6 +808,9 @@ func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
 	if err := m.init(); err != nil {
 		return err
 	}
+	if setter, ok := f.(interface{ SetEditor(*Editor) }); ok {
+		setter.SetEditor(m)
+	}
 	m.LineEditor.BindKey(key, f)
 	return nil
 }
