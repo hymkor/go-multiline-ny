@@ -47,6 +47,7 @@ func (m *Editor) SetDefault(d []string)                         { m.defaults = d
 func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = value }
 func (m *Editor) CursorLine() int                               { return m.csrline }
 func (m *Editor) Lines() []string                               { return m.lines }
+func (m *Editor) SetNextEditHook(f func(string) bool)           { m.after = f }
 
 // Deprecated: set LineEditor.Highlight instead
 func (m *Editor) SetColoring(c interface{}) {}
