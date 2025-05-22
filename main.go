@@ -746,9 +746,6 @@ func (m *Editor) init() error {
 	m.viewHeight -= m.StatusLineHeight
 
 	m.LineEditor.LineFeedWriter = func(rc readline.Result, w io.Writer) (int, error) {
-		if rc != readline.ENTER {
-			return fmt.Fprintln(w)
-		}
 		return 0, nil
 	}
 	if m.prompt == nil {
