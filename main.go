@@ -462,7 +462,7 @@ func (m *Editor) newPrinter() func(i int) {
 	}
 }
 
-// printAfter prints lines[i:j].
+// printFromTo prints lines[i:j].
 // `headline` must be corrected.
 // It does not fix view.
 func (m *Editor) printFromTo(i, j int) int {
