@@ -1,3 +1,6 @@
+- Completion now supports listing candidates without interfering with the current editing lines (in multiline editing).  
+  (see examples/example.go and README.md).
+
 v0.20.3
 =======
 May 22, 2025
