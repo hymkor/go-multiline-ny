@@ -667,6 +667,11 @@ func (m *Editor) CmdYank(_ context.Context, b *readline.Buffer) readline.Result 
 	return readline.ENTER
 }
 
+func (m *Editor) cmdCtrlCButKeepCmdline(_ context.Context, b *readline.Buffer) readline.Result {
+	m.Sync(b.String())
+	return readline.INTR
+}
+
 type PrefixCommand struct {
 	readline.KeyMap
 	m      *Editor
@@ -793,6 +798,7 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlJ, ac(m.Submit))
 	m.LineEditor.BindKey(keys.CtrlR, ac(m.cmdISearchBackward))
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
+	m.LineEditor.BindKey(keys.CtrlC, ac(m.cmdCtrlCButKeepCmdline))
 
 	escape := m.NewPrefixCommand("Esc-   [Enter] Submit, [Esc] Cancel, [p] Previous, [n] Next\rEsc-")
 	m.LineEditor.BindKey(keys.Escape, escape)
