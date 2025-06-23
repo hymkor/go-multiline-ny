@@ -11,10 +11,38 @@ import (
 	"github.com/mattn/go-colorable"
 
 	"github.com/nyaosorg/go-readline-ny"
+	"github.com/nyaosorg/go-readline-ny/keys"
 	"github.com/nyaosorg/go-readline-ny/simplehistory"
 
 	"github.com/hymkor/go-multiline-ny"
+	"github.com/hymkor/go-multiline-ny/completion"
 )
+
+var (
+	commands = []string{"select", "insert", "delete", "update"}
+	tables   = []string{"dept", "emp", "bonus", "salgrade", "bonus"}
+	columns  = []string{"deptno", "dname", "loc", "empno", "ename", "job", "mgr", "hiredate", "sal", "comm", "grade", "losal", "hisal"}
+)
+
+func getCompletionCandidates(fields []string) (forCompletion []string, forListing []string) {
+	candidates := commands
+	for _, word := range fields {
+		if strings.EqualFold(word, "from") {
+			candidates = append([]string{"where"}, tables...)
+		} else if strings.EqualFold(word, "set") {
+			candidates = append([]string{"where"}, columns...)
+		} else if strings.EqualFold(word, "update") {
+			candidates = append([]string{"set"}, tables...)
+		} else if strings.EqualFold(word, "delete") {
+			candidates = []string{"from"}
+		} else if strings.EqualFold(word, "select") {
+			candidates = append([]string{"from"}, columns...)
+		} else if strings.EqualFold(word, "where") {
+			candidates = append([]string{"and", "or"}, columns...)
+		}
+	}
+	return candidates, candidates
+}
 
 func main() {
 	ctx := context.Background()
@@ -54,9 +82,22 @@ func main() {
 	// (On other operating systems, it can be ommited)
 	ed.SetWriter(colorable.NewColorableStdout())
 
+	// enable history (optional)
 	history := simplehistory.New()
 	ed.SetHistory(history)
 	ed.SetHistoryCycling(true)
+
+	// enable completion (optional)
+	ed.BindKey(keys.CtrlI, &completion.CmdCompletionOrList{
+		// Characters listed here are excluded from completion.
+		Delimiter: "&|><;",
+		// Enclose candidates with these characters when they contain spaces
+		Enclosure: `"'`,
+		// String to append when only one candidate remains
+		Postfix: " ",
+		// Function for listing candidates
+		Candidates: getCompletionCandidates,
+	})
 
 	for {
 		lines, err := ed.Read(ctx)
