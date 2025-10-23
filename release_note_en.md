@@ -1,3 +1,7 @@
+v0.21.1
+=======
+Oct 24, 2025
+
 - Fixed an issue where pressing `Ctrl-C` during multiline input reverted the **current cursor line** to its previous state. Now only the input buffer is cleared, and the screen display (including the current line) remains visible.
 
 v0.21.0
