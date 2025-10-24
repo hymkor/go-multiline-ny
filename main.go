@@ -382,11 +382,12 @@ func (m *Editor) newPrinter() func(i int) {
 	if src == m.memoHighlightSource && m.memoHighlightResult != nil {
 		colSeq = m.memoHighlightResult
 	} else {
-		colSeq = readline.HighlightToColoring(
+		colSeq = readline.HighlightToColorSequence(
 			src,
 			m.ResetColor,
 			m.DefaultColor,
-			m.Highlight)
+			m.Highlight,
+			-1)
 		m.memoHighlightSource = src
 		m.memoHighlightResult = colSeq
 	}
