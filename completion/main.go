@@ -16,11 +16,12 @@ import (
 type CmdCompletion = singleCompletion.CmdCompletion2
 
 type CmdCompletionOrList struct {
-	editor     *multiline.Editor
-	Delimiter  string
-	Enclosure  string
-	Postfix    string
-	Candidates func(fieldsBeforeCursor []string) (completionSet []string, listingSet []string)
+	editor            *multiline.Editor
+	Delimiter         string
+	Enclosure         string
+	Postfix           string
+	Candidates        func(fieldsBeforeCursor []string) (completionSet []string, listingSet []string)
+	CandidatesContext func(ctx context.Context, fieldsBeforeCursor []string) (completionSet []string, listingSet []string)
 }
 
 func (C *CmdCompletionOrList) SetEditor(m *multiline.Editor) {
@@ -94,6 +95,9 @@ func (C *CmdCompletionOrList) Call(ctx context.Context, B *readline.Buffer) read
 		f := make([]string, 0, len(fieldsBeforeCurrentLine)+len(fieldsBeforeCursor))
 		f = append(f, fieldsBeforeCurrentLine...)
 		f = append(f, fieldsBeforeCursor...)
+		if C.CandidatesContext != nil {
+			return C.CandidatesContext(ctx, f)
+		}
 		return C.Candidates(f)
 	}
 	list := singleCompletion.Complete(C.Enclosure, C.Delimiter, B, newCandidates, C.Postfix)
