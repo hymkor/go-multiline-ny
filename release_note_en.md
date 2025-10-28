@@ -1,3 +1,7 @@
+- Added a new field `CandidatesContext` to the `CmdCompletionOrList` struct in the `completion` package.
+    - This allows the callback function for completion candidates to receive a `context.Context`, enabling safe retrieval of candidates even for context-dependent operations such as those in SQL-Bless.
+    - The existing `Candidates` field remains unchanged to maintain backward compatibility.
+
 v0.21.1
 =======
 Oct 24, 2025
