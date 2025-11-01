@@ -1,3 +1,7 @@
+v0.22.0
+=======
+Nov 1, 2025
+
 - "completion" サブパッケージの `CmdCompletionOrList` 構造体に、新しいフィールド `CandidatesContext` を追加した。
     - これにより、補完候補を取得するコールバック関数で context.Context を受け取れるようになり、SQL-Bless のようにコンテキストが必要な処理でも安全に補完候補を取得できるようになった。
     - 従来の Candidates フィールドもそのまま残しており、互換性は維持されている。
