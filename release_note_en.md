@@ -1,3 +1,6 @@
+- Updated nyaosorg/go-box to v3.0.0 and adapted to the API changes in go-box v3
+- Updated nyaosorg/go-readline-ny to v1.12.1
+
 v0.22.0
 =======
 Nov 1, 2025

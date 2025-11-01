@@ -1,3 +1,6 @@
+- nyaosorg/go-box を v3 へ更新し、API の変更に対応
+- nyaosorg/go-readline-ny を v1.12.1 へ更新
+
 v0.22.0
 =======
 Nov 1, 2025
