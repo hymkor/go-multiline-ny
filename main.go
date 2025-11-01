@@ -2,12 +2,10 @@ package multiline
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
-	"os"
 	"strings"
-
-	"golang.org/x/term"
 
 	"github.com/mattn/go-runewidth"
 
@@ -735,6 +733,25 @@ func (m *Editor) SetPredictColor(colors [2]string) {
 	m.LineEditor.PredictColor = colors
 }
 
+func (m *Editor) querySize() (int, int, error) {
+	tty := m.LineEditor.Tty
+	if tty == nil {
+		return 0, 0, errors.New("querySize must be called after go-readline-ny.Init")
+	}
+
+	if err := tty.Open(nil); err != nil {
+		return 0, 0, fmt.Errorf("readline.Editor.Tty.Open: %w", err)
+	}
+	defer tty.Close()
+
+	w, h, err := tty.Size()
+	if err != nil {
+		return 0, 0, fmt.Errorf("readline.Editor.Tty.Size: %w", err)
+	}
+	h -= m.StatusLineHeight
+	return w, h, nil
+}
+
 func (m *Editor) init() error {
 	if m.modifiedHistoryEntry == nil {
 		m.modifiedHistoryEntry = make(map[int]string)
@@ -746,12 +763,6 @@ func (m *Editor) init() error {
 	if m.viewWidth > 0 {
 		return nil
 	}
-	var err error
-	m.viewWidth, m.viewHeight, err = term.GetSize(int(os.Stdout.Fd()))
-	if err != nil {
-		return err
-	}
-	m.viewHeight -= m.StatusLineHeight
 
 	m.LineEditor.LineFeedWriter = func(rc readline.Result, w io.Writer) (int, error) {
 		return 0, nil
@@ -808,7 +819,11 @@ func (m *Editor) init() error {
 	escape.BindKey("\r", ac(m.Submit))            // M-Enter: submit
 
 	m.LineEditor.Init()
-	return nil
+
+	var err error
+	m.viewWidth, m.viewHeight, err = m.querySize()
+
+	return err
 }
 
 func (m *Editor) BindKey(key keys.Code, f readline.Command) error {
@@ -855,7 +870,7 @@ func (f *spanPattern) FindAllStringIndex(s string, n int) [][]int {
 
 func (m *Editor) Read(ctx context.Context) ([]string, error) {
 	if err := m.init(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("multiline.init: %w", err)
 	}
 	defer func() {
 		m.promptLastLineOnly = false

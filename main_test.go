@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nyaosorg/go-readline-ny/auto"
+	"github.com/nyaosorg/go-ttyadapter/auto"
 	"github.com/nyaosorg/go-readline-ny/keys"
 )
 
