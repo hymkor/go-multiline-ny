@@ -1,6 +1,12 @@
 - Added a new field `CandidatesContext` to the `CmdCompletionOrList` struct in the `completion` package.
     - This allows the callback function for completion candidates to receive a `context.Context`, enabling safe retrieval of candidates even for context-dependent operations such as those in SQL-Bless.
     - The existing `Candidates` field remains unchanged to maintain backward compatibility.
+- Use the `Size` method of the terminal instance set to `go-readline-ny.Editor.Tty` instead of using `"golang.org/x/term".GetSize` to obtain the screen size.
+   - The latter raises a handle error during automated tests, while the former can be replaced with a mock in testing.
+    - Following this change, [nyaosorg/go-readline-ny] separated the terminal input virtualization into a new package, [nyaosorg/go-ttyadapter], as of v1.12.0, so this package updated its import paths accordingly.
+
+[nyaosorg/go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
+[nyaosorg/go-ttyadapter]: https://github.com/nyaosorg/go-ttyadapter
 
 v0.21.1
 =======

@@ -1,6 +1,12 @@
 - "completion" サブパッケージの `CmdCompletionOrList` 構造体に、新しいフィールド `CandidatesContext` を追加した。
-    - これにより、補完候補を取得するコールバック関数で context.Context を受け取れるようになり、SQL-Bless のようにコンテキストが必要な処理でも安全に補完候補を取得できるようになりました。
-    - 従来の Candidates フィールドもそのまま残しており、互換性は維持されています。
+    - これにより、補完候補を取得するコールバック関数で context.Context を受け取れるようになり、SQL-Bless のようにコンテキストが必要な処理でも安全に補完候補を取得できるようになった。
+    - 従来の Candidates フィールドもそのまま残しており、互換性は維持されている。
+- 画面寸法を計測するのに `"golang.org/x/term".GetSize` ではなく、`go-readline-ny.Editor.Tty` に設定された端末インスタンス(通常は `"github.com/mattn/go-tty".TTY` ) の `Size` メソッドを使うようにした。
+    - 前者は自動テスト内で実行するとハンドルエラーが発生する場合があった。後者であればテストの際に差し替えることが可能となる
+    - これに伴い、[nyaosorg/go-readline-ny] が v1.12.0 にて端末入力の仮想化処理を別パッケージ [nyaosorg/go-ttyadapter] へ分離したため、本パッケージでも import 先を追随した
+
+[nyaosorg/go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
+[nyaosorg/go-ttyadapter]: https://github.com/nyaosorg/go-ttyadapter
 
 v0.21.1
 =======
