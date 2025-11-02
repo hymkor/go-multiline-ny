@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/nyaosorg/go-box/v2"
+	"github.com/nyaosorg/go-box/v3"
 	"github.com/nyaosorg/go-readline-ny"
 	singleCompletion "github.com/nyaosorg/go-readline-ny/completion"
 
@@ -109,7 +109,7 @@ func (C *CmdCompletionOrList) Call(ctx context.Context, B *readline.Buffer) read
 	m.SetNextEditHook(func(line string) bool {
 		m.GotoEndLine()
 
-		box.Print(ctx, list, B.Out)
+		box.Println(list, B.Out)
 
 		lfCount := m.PrintFromLine(m.Headline())
 		lfCount -= (m.CursorLine() - m.Headline())

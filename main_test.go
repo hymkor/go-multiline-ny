@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nyaosorg/go-ttyadapter/auto"
 	"github.com/nyaosorg/go-readline-ny/keys"
+	"github.com/nyaosorg/go-ttyadapter/auto"
 )
 
 func TestEditorRead(t *testing.T) {
