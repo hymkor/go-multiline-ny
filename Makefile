@@ -25,4 +25,8 @@ test:
 demo:
 	$(GO) run examples/example.go
 
+release:
+	pwsh tools/latest-notes.ps1 | gh release create -d --notes-file - -t $(VERSION) $(VERSION)
+
+
 .PHONY: all try test demo
