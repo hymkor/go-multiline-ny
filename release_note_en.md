@@ -1,3 +1,5 @@
+- Fixed incorrect cursor position handling in syntax highlighting when editing multiple lines. The cursor offset is now correctly adjusted to account for the prefixed lines. (#12)
+
 v0.22.1
 =======
 Nov 2, 2025
