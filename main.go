@@ -844,8 +844,15 @@ type spanPattern struct {
 }
 
 func (f *spanPattern) FindAllStringIndex(s string, n int) [][]int {
-	all := f.Prefix + "\n" + s + "\n" + f.Postfix
+	all := f.Prefix + s + f.Postfix
 	result := [][]int{}
+
+	// If `n` is negative, it carries the cursor position as (-1 - pos).
+	// Because f.Prefix is added before the main string, we subtract its length
+	// to keep the cursor position consistent with the concatenated text.
+	if n < 0 {
+		n -= len(f.Prefix)
+	}
 	for _, r := range f.Original.FindAllStringIndex(all, n) {
 		start := r[0] - len(f.Prefix) - 1
 		end := r[1] - len(f.Prefix) - 1
