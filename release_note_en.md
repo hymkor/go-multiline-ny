@@ -1,3 +1,7 @@
+v0.22.2
+=======
+Nov 14, 2025
+
 - Fixed incorrect cursor position handling in syntax highlighting when editing multiple lines. The cursor offset is now correctly adjusted to account for the prefixed lines. (#12)
 - Added wrapper methods for accessing internal `LineEditor` fields:
     - `Out() *bufio.Writer`
