@@ -1,6 +1,7 @@
 package multiline
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -44,6 +45,7 @@ func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.H
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
 func (m *Editor) Writer() io.Writer                             { return m.LineEditor.Writer }
+func (m *Editor) Out() *bufio.Writer                            { return m.LineEditor.Out }
 func (m *Editor) SetDefault(d []string)                         { m.defaults = d }
 func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = value }
 func (m *Editor) CursorLine() int                               { return m.csrline }
