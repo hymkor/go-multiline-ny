@@ -1,4 +1,11 @@
 - Fixed incorrect cursor position handling in syntax highlighting when editing multiple lines. The cursor offset is now correctly adjusted to account for the prefixed lines. (#12)
+- Added wrapper methods for accessing internal `LineEditor` fields:
+    - `Out() *bufio.Writer`
+    - `Writer() io.Writer`
+    - `SetTty()`
+
+  These methods are introduced to discourage direct access to the `LineEditor`
+  field, preparing for future deprecation of direct field exposure. (#13)
 
 v0.22.1
 =======

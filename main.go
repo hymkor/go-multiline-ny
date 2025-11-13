@@ -1,6 +1,7 @@
 package multiline
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/nyaosorg/go-readline-ny"
 	"github.com/nyaosorg/go-readline-ny/keys"
+	"github.com/nyaosorg/go-ttyadapter"
 )
 
 type Editor struct {
@@ -37,10 +39,13 @@ type Editor struct {
 	memoHighlightResult *readline.HighlightColorSequence
 }
 
+func (m *Editor) SetTty(tty ttyadapter.Tty)                     { m.LineEditor.Tty = tty }
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
 func (m *Editor) SetWriter(w io.Writer)                         { m.LineEditor.Writer = w }
+func (m *Editor) Writer() io.Writer                             { return m.LineEditor.Writer }
+func (m *Editor) Out() *bufio.Writer                            { return m.LineEditor.Out }
 func (m *Editor) SetDefault(d []string)                         { m.defaults = d }
 func (m *Editor) SetMoveEnd(value bool)                         { m.moveEnd = value }
 func (m *Editor) CursorLine() int                               { return m.csrline }
