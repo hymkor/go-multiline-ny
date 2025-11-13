@@ -11,6 +11,7 @@ import (
 
 	"github.com/nyaosorg/go-readline-ny"
 	"github.com/nyaosorg/go-readline-ny/keys"
+	"github.com/nyaosorg/go-ttyadapter"
 )
 
 type Editor struct {
@@ -37,6 +38,7 @@ type Editor struct {
 	memoHighlightResult *readline.HighlightColorSequence
 }
 
+func (m *Editor) SetTty(tty ttyadapter.Tty)                     { m.LineEditor.Tty = tty }
 func (m *Editor) SetHistoryCycling(value bool)                  { m.LineEditor.HistoryCycling = value }
 func (m *Editor) SetHistory(h readline.IHistory)                { m.LineEditor.History = h }
 func (m *Editor) SetPrompt(f func(io.Writer, int) (int, error)) { m.prompt = f }
