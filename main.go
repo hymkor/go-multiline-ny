@@ -859,8 +859,8 @@ func (f *spanPattern) FindAllStringIndex(s string, n int) [][]int {
 		n -= len(f.Prefix)
 	}
 	for _, r := range f.Original.FindAllStringIndex(all, n) {
-		start := r[0] - len(f.Prefix) - 1
-		end := r[1] - len(f.Prefix) - 1
+		start := r[0] - len(f.Prefix)
+		end := r[1] - len(f.Prefix)
 		if end < 0 {
 			continue
 		}
