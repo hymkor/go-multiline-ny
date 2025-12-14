@@ -1,3 +1,5 @@
+- Fix: the range of syntax highlighting was incorrect since v0.22.2 #12 (#14)
+
 v0.22.2
 =======
 Nov 14, 2025
