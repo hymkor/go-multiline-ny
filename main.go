@@ -817,11 +817,9 @@ func (m *Editor) init() error {
 	m.LineEditor.BindKey(keys.CtrlS, readline.SelfInserter(keys.CtrlS))
 	m.LineEditor.BindKey(keys.CtrlC, ac(m.cmdCtrlCButKeepCmdline))
 
-	escape := m.NewPrefixCommand("Esc-   [Enter] Submit, [Esc] Cancel, [p] Previous, [n] Next\rEsc-")
-	m.LineEditor.BindKey(keys.Escape, escape)
-	escape.BindKey("p", ac(m.CmdPreviousHistory)) // M-p: previous
-	escape.BindKey("n", ac(m.CmdNextHistory))     // M-n: next
-	escape.BindKey("\r", ac(m.Submit))            // M-Enter: submit
+	m.LineEditor.BindKey(keys.Escape+"p", ac(m.CmdPreviousHistory)) // M-p: previous
+	m.LineEditor.BindKey(keys.Escape+"n", ac(m.CmdNextHistory))     // M-n: next
+	m.LineEditor.BindKey(keys.Escape+"\r", ac(m.Submit))            // M-Enter: submit
 
 	m.LineEditor.Init()
 
