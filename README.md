@@ -7,14 +7,16 @@ This is the readline package that supports multiline input and extends [go-readl
 
 | Key | Feature
 |-----|---------
-| Ctrl-M or Enter | Insert a new line[^Y]
-| Ctrl-J/Enter or Escape-Enter | Submit all lines
-| Ctrl-P or Up   | Move cursor to previous line or last line of previous set of inputs in history
-| Ctrl-N or Down | Move cursor to next line or first line of next set of inputs in history
-| Alt-P or Ctrl-Up | Fetch the previous lines-set of the history
-| Alt-N or Ctrl-Down | Fetch the next lines-set of the history
-| Ctrl-Y | Paste the string in the clipboard
-| Ctrl-R | Incremental search
+| `Ctrl`+`M` or `Enter` | Insert a new line[^Y]
+| `Ctrl`+`J`, `Ctrl`+`Enter` or `Meta`+`Enter` | Submit all lines
+| `Ctrl`+`P` or `Up`   | Move cursor to previous line or last line of previous set of inputs in history
+| `Ctrl`+`N` or `Down` | Move cursor to next line or first line of next set of inputs in history
+| `Meta`+`P` or `Ctrl`+`Up` | Fetch the previous lines-set of the history
+| `Meta`+`N` or `Ctrl`+`Down` | Fetch the next lines-set of the history
+| `Ctrl`+`Y` | Paste the string in the clipboard
+| `Ctrl`+`R` | Incremental search
+
+`Meta` means either `Alt`+`key` or `Esc` followed by key.
 
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
 [^Y]: It is possible to give the condition to submit.
@@ -76,11 +78,11 @@ func main() {
     fmt.Println("C-m or Enter      : Insert a linefeed")
     fmt.Println("C-p or UP         : Move to the previous line.")
     fmt.Println("C-n or DOWN       : Move to the next line")
-    fmt.Println("C-j or Esc+Enter  : Submit")
+    fmt.Println("C-j or Meta+Enter : Submit")
     fmt.Println("C-c               : Abort.")
     fmt.Println("C-D with no chars : Quit.")
-    fmt.Println("C-UP   or M-P     : Move to the previous history entry")
-    fmt.Println("C-DOWN or M-N     : Move to the next history entry")
+    fmt.Println("C-UP   or Meta-P  : Move to the previous history entry")
+    fmt.Println("C-DOWN or Meta-N  : Move to the next history entry")
 
     var ed multiline.Editor
     ed.SetPrompt(func(w io.Writer, lnum int) (int, error) {
