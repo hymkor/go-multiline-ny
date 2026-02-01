@@ -1,6 +1,10 @@
 Release notes (English)
 =======================
 
+- Improved single-key input handling so that control key escape sequences (e.g. the Up Arrow `\x1B[A`) are not misinterpreted even when they are split by terminal behavior. As part of this change, the `Esc` key is now always treated as a prefix key. The following internal dependencies were updated: (#15)
+  - go-readline-ny v1.12.1 → v1.14.1
+  - go-ttyadapter v0.0.1 → v0.3.0
+
 v0.22.3
 -------
 Dec 14, 2025
