@@ -49,11 +49,11 @@ func main() {
 	fmt.Println("C-m or Enter      : Insert a linefeed")
 	fmt.Println("C-p or UP         : Move to the previous line.")
 	fmt.Println("C-n or DOWN       : Move to the next line")
-	fmt.Println("C-j or Esc+Enter  : Submit")
+	fmt.Println("C-j or Meta+Enter : Submit")
 	fmt.Println("C-c               : Abort.")
 	fmt.Println("C-D with no chars : Quit.")
-	fmt.Println("C-UP   or M-P     : Move to the previous history entry")
-	fmt.Println("C-DOWN or M-N     : Move to the next history entry")
+	fmt.Println("C-UP   or Meta-P  : Move to the previous history entry")
+	fmt.Println("C-DOWN or Meta-N  : Move to the next history entry")
 
 	var ed multiline.Editor
 	ed.SetPrompt(func(w io.Writer, lnum int) (int, error) {
