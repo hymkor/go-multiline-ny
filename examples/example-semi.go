@@ -45,7 +45,7 @@ func main() {
 	})
 
 	// To enable escape sequence on Windows.
-	// (On other operating systems, it can be ommited)
+	// (On other operating systems, it can be omitted)
 	ed.SetWriter(colorable.NewColorableStdout())
 
 	// Use the clipboard of the operating system.

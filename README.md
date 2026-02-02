@@ -53,7 +53,7 @@ import (
 
 var (
     commands = []string{"select", "insert", "delete", "update"}
-    tables   = []string{"dept", "emp", "bonus", "salgrade", "bonus"}
+    tables   = []string{"dept", "emp", "bonus", "salgrade"}
     columns  = []string{"deptno", "dname", "loc", "empno", "ename", "job", "mgr", "hiredate", "sal", "comm", "grade", "losal", "hisal"}
 )
 
@@ -112,7 +112,7 @@ func main() {
     ed.DefaultColor = "\x1B[37;49;1m"
 
     // To enable escape sequence on Windows.
-    // (On other operating systems, it can be ommited)
+    // (On other operating systems, it can be omitted)
     ed.SetWriter(colorable.NewColorableStdout())
 
     // enable history (optional)
@@ -196,7 +196,7 @@ func main() {
     })
 
     // To enable escape sequence on Windows.
-    // (On other operating systems, it can be ommited)
+    // (On other operating systems, it can be omitted)
     ed.SetWriter(colorable.NewColorableStdout())
 
     // Use the clipboard of the operating system.
