@@ -3,23 +3,27 @@ go-multiline-ny
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/hymkor/go-multiline-ny.svg)](https://pkg.go.dev/github.com/hymkor/go-multiline-ny)
 
-This is the readline package that supports multiline input and extends [go-readline-ny] with new keybindings. It is compatible with Emacs.
+**go-multiline-ny** is a **REPL-oriented multi-line editor** built on top of [go-readline-ny], a pure Go Readline-compatible implementation.
+It allows vertical cursor movement across lines, updates only the affected input lines, and does **not** take over the full screen — making it ideal for SQL-like multi-line inputs.
+It is implemented in pure Go, and works on Windows and most UNIX-like systems
+(confirmed on Linux and FreeBSD; macOS is expected to work as well).
+
 
 | Key | Feature
 |-----|---------
 | `Ctrl`+`M` or `Enter` | Insert a new line[^Y]
 | `Ctrl`+`J`, `Ctrl`+`Enter` or `Meta`+`Enter` | Submit all lines
-| `Ctrl`+`P` or `Up`   | Move cursor to previous line or last line of previous set of inputs in history
-| `Ctrl`+`N` or `Down` | Move cursor to next line or first line of next set of inputs in history
-| `Meta`+`P` or `Ctrl`+`Up` | Fetch the previous lines-set of the history
-| `Meta`+`N` or `Ctrl`+`Down` | Fetch the next lines-set of the history
+| `Ctrl`+`P` or `Up`   | Move cursor to previous line or last line of previous set of input lines in history
+| `Ctrl`+`N` or `Down` | Move cursor to next line or first line of next set of input lines in history
+| `Meta`+`P` or `Ctrl`+`Up` | Fetch previous set of input lines in history
+| `Meta`+`N` or `Ctrl`+`Down` | Fetch next set of input lines in history
 | `Ctrl`+`Y` | Paste the string in the clipboard
 | `Ctrl`+`R` | Incremental search
 
 `Meta` means either `Alt`+`key` or `Esc` followed by key.
 
 [go-readline-ny]: https://github.com/nyaosorg/go-readline-ny
-[^Y]: It is possible to give the condition to submit.
+[^Y]: The submit condition can be customized.
 
 [Example](./examples/example.go)
 ---------
@@ -49,7 +53,7 @@ import (
 
 var (
     commands = []string{"select", "insert", "delete", "update"}
-    tables   = []string{"dept", "emp", "bonus", "salgrade", "bonus"}
+    tables   = []string{"dept", "emp", "bonus", "salgrade"}
     columns  = []string{"deptno", "dname", "loc", "empno", "ename", "job", "mgr", "hiredate", "sal", "comm", "grade", "losal", "hisal"}
 )
 
@@ -108,7 +112,7 @@ func main() {
     ed.DefaultColor = "\x1B[37;49;1m"
 
     // To enable escape sequence on Windows.
-    // (On other operating systems, it can be ommited)
+    // (On other operating systems, it can be omitted)
     ed.SetWriter(colorable.NewColorableStdout())
 
     // enable history (optional)
@@ -192,7 +196,7 @@ func main() {
     })
 
     // To enable escape sequence on Windows.
-    // (On other operating systems, it can be ommited)
+    // (On other operating systems, it can be omitted)
     ed.SetWriter(colorable.NewColorableStdout())
 
     // Use the clipboard of the operating system.
