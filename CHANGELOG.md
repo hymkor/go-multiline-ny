@@ -1,5 +1,7 @@
-Release notes (English)
-=======================
+Changelog (English)
+===================
+
+- Rename release note files to CHANGELOG.md and CHANGELOG\_ja.md (#21)
 
 v0.22.4
 -------

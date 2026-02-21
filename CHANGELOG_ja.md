@@ -1,5 +1,7 @@
-Release notes (Japanese)
-========================
+Changelog (Japanese)
+====================
+
+- リリースノートのファイルを CHANGELOG.md , CHANGELOG\_ja.md へリネーム (#21)
 
 v0.22.4
 -------
