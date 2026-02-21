@@ -1,5 +1,5 @@
-Release notes (Japanese)
-========================
+Changelog (Japanese)
+====================
 
 v0.22.4
 -------
