@@ -132,6 +132,13 @@ func main() {
         Candidates: getCompletionCandidates,
     })
 
+    // Show newline mark (experimental)
+    ed.OnAfterRender = func(w io.Writer, availWidth int) {
+        if availWidth >= 2 {
+            io.WriteString(w, "\x1B[33;22m↓\x1B[39m")
+        }
+    }
+
     for {
         lines, err := ed.Read(ctx)
         if err != nil {
