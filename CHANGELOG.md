@@ -1,6 +1,9 @@
 Changelog (English)
 ===================
 
+- Add **experimental** `OnAfterRender` hook  
+  Allows custom rendering after each line is drawn in the multiline editor.
+  This can be used to display visual markers such as newline indicators. (#22)
 - Rename release note files to CHANGELOG.md and CHANGELOG\_ja.md (#21)
 
 v0.22.4
