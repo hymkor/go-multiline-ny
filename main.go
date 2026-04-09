@@ -34,6 +34,7 @@ type Editor struct {
 	Highlight            []readline.Highlight
 	ResetColor           string
 	DefaultColor         string
+	OnAfterRender        func(w io.Writer, availWidth int) // experimenal
 
 	memoHighlightSource string
 	memoHighlightResult *readline.HighlightColorSequence
@@ -463,6 +464,9 @@ func (m *Editor) newPrinter() func(i int) {
 				w += w1
 			}
 		}
+		if m.OnAfterRender != nil {
+			m.OnAfterRender(m.LineEditor.Out, m.viewWidth-forbiddenWidth-w)
+		}
 		io.WriteString(m.LineEditor.Out, m.ResetColor)
 		io.WriteString(m.LineEditor.Out, "\x1B[K")
 	}
@@ -758,6 +762,11 @@ func (m *Editor) querySize() (int, int, error) {
 }
 
 func (m *Editor) init() error {
+	if m.OnAfterRender != nil {
+		m.LineEditor.OnAfterRender = func(B *readline.Buffer, availWidth int) {
+			m.OnAfterRender(B.Out, availWidth)
+		}
+	}
 	if m.modifiedHistoryEntry == nil {
 		m.modifiedHistoryEntry = make(map[int]string)
 	} else {
