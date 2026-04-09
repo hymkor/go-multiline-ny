@@ -284,7 +284,7 @@ func (m *Editor) NewLine(_ context.Context, b *readline.Buffer) readline.Result 
 	b.RepaintAll()
 
 	m.after = func(line string) bool {
-		io.WriteString(m.LineEditor.Out, "\x1B[K\n")
+		io.WriteString(m.LineEditor.Out, "\n")
 		m.Sync(line)
 		m.LineEditor.Cursor = 0
 		m.csrline++

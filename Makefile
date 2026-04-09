@@ -29,5 +29,7 @@ demo:
 release:
 	pwsh tools/latest-notes.ps1 | gh release create -d --notes-file - -t $(VERSION) $(VERSION)
 
+readme:
+	$(GO) run github.com/hymkor/example-into-readme@latest
 
 .PHONY: all try test demo
