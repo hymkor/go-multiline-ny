@@ -27,7 +27,7 @@ demo:
 	$(GO) run examples/example.go
 
 release:
-	pwsh tools/latest-notes.ps1 | gh release create -d --notes-file - -t $(VERSION) $(VERSION)
+	$(GO) run github.com/hymkor/latest-notes@latest | gh release create -d --notes-file - -t $(VERSION) $(VERSION)
 
 readme:
 	$(GO) run github.com/hymkor/example-into-readme@latest
