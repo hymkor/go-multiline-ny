@@ -1,6 +1,13 @@
 Changelog (Japanese)
 ====================
 
+v0.23.1
+-------
+Apr 11, 2026
+
+- go-readline-ny を v1.14.3 へ更新
+  - 描画順の問題で、`OnAfterRender` の出力が消えてしまう不具合を修正 ([go-readline-ny#35](https://github.com/nyaosorg/go-readline-ny/pull/35))
+
 v0.23.0
 -------
 Apr 9, 2026
