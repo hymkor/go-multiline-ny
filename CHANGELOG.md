@@ -1,6 +1,9 @@
 Changelog (English)
 ===================
 
+- Update go-readline-ny to v1.14.3
+  - Fix `OnAfterRender` output being erased due to render order issues ([go-readline-ny#35](https://github.com/nyaosorg/go-readline-ny/pull/35))
+
 v0.23.0
 -------
 Apr 9, 2026
